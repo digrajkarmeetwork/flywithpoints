@@ -49,6 +49,7 @@ export function AirportInput({
         !inputRef.current?.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        setQuery('');
       }
     };
 
@@ -69,9 +70,20 @@ export function AirportInput({
 
   const handleFocus = () => {
     setIsOpen(true);
+    setQuery('');
     if (!query) {
       setResults(popularAirports.slice(0, 6));
     }
+  };
+
+  const displayValue = () => {
+    if (isOpen) {
+      return query;
+    }
+    if (selectedAirport) {
+      return `${selectedAirport.city} (${selectedAirport.code})`;
+    }
+    return '';
   };
 
   return (
@@ -80,7 +92,7 @@ export function AirportInput({
         {label}
       </Label>
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">
           {icon === 'departure' ? (
             <Plane className="h-5 w-5 transform rotate-45" />
           ) : (
@@ -90,18 +102,12 @@ export function AirportInput({
         <Input
           ref={inputRef}
           type="text"
-          placeholder={selectedAirport ? '' : placeholder}
-          value={isOpen ? query : selectedAirport ? `${selectedAirport.city} (${selectedAirport.code})` : ''}
+          placeholder={placeholder}
+          value={displayValue()}
           onChange={handleInputChange}
           onFocus={handleFocus}
           className="pl-10 h-12 text-base bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500"
         />
-        {selectedAirport && !isOpen && (
-          <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none">
-            <span className="text-slate-900 font-medium">{selectedAirport.city}</span>
-            <span className="text-slate-500 ml-1">({selectedAirport.code})</span>
-          </div>
-        )}
       </div>
 
       {isOpen && (
