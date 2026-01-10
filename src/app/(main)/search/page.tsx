@@ -24,6 +24,13 @@ import { getAirlinePrograms } from '@/data/loyalty-programs';
 import { getAirportByCode } from '@/data/airports';
 import { cn } from '@/lib/utils';
 
+interface AIRecommendation {
+  title: string;
+  description: string;
+  reasoning?: string;
+  savings?: number;
+}
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const {
@@ -36,6 +43,8 @@ function SearchContent() {
   } = useSearchStore();
   const filteredResults = useFilteredResults();
   const [showFilters, setShowFilters] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
 
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
@@ -44,6 +53,36 @@ function SearchContent() {
 
   const originAirport = origin ? getAirportByCode(origin) : null;
   const destAirport = destination ? getAirportByCode(destination) : null;
+
+  // Fetch AI recommendations
+  const fetchAIRecommendations = async () => {
+    if (!origin || !destination) return;
+
+    setIsLoadingAI(true);
+    try {
+      const response = await fetch('/api/ai/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchParams: { origin, destination, cabinClass: cabin },
+          flightResults: filteredResults.slice(0, 5).map((f) => ({
+            programId: f.programId,
+            pointsRequired: f.pointsRequired,
+            valueCpp: f.valueCpp,
+          })),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAiRecommendations(data.recommendations || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch AI recommendations:', error);
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
 
   useEffect(() => {
     if (origin && destination && date) {
@@ -67,6 +106,13 @@ function SearchContent() {
       fetchResults();
     }
   }, [origin, destination, date, cabin, setSearchParams, setResults, setSearching]);
+
+  // Fetch AI recommendations when results are loaded
+  useEffect(() => {
+    if (filteredResults.length > 0 && !isSearching) {
+      fetchAIRecommendations();
+    }
+  }, [filteredResults.length, isSearching, origin, destination]);
 
   const airlinePrograms = getAirlinePrograms();
 
@@ -221,16 +267,32 @@ function SearchContent() {
                   </CardContent>
                 </Card>
 
-                {/* AI Recommendation Card */}
+                {/* AI Recommendations Card */}
                 <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium text-slate-900">AI Tip</span>
+                      <span className="font-medium text-slate-900">AI Recommendations</span>
                     </div>
-                    <p className="text-sm text-slate-600">
-                      For this route, consider booking through Virgin Atlantic for the best value on partner flights.
-                    </p>
+                    {isLoadingAI ? (
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Analyzing routes...
+                      </div>
+                    ) : aiRecommendations.length > 0 ? (
+                      <div className="space-y-3">
+                        {aiRecommendations.map((rec, index) => (
+                          <div key={index} className="border-b border-blue-100 last:border-0 pb-2 last:pb-0">
+                            <p className="text-sm font-medium text-slate-800">{rec.title}</p>
+                            <p className="text-xs text-slate-600 mt-1">{rec.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-600">
+                        Search for flights to get personalized AI recommendations.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </aside>
