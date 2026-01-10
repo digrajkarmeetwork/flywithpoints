@@ -5,20 +5,11 @@ const footerLinks = {
   product: [
     { label: 'Search Flights', href: '/search' },
     { label: 'Sweet Spots', href: '/sweet-spots' },
-    { label: 'Transfer Partners', href: '/partners' },
-    { label: 'Points Calculator', href: '/calculator' },
+    { label: 'Dashboard', href: '/dashboard' },
   ],
-  resources: [
-    { label: 'Getting Started', href: '/guides/getting-started' },
-    { label: 'Program Guides', href: '/guides' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'FAQ', href: '/faq' },
-  ],
-  company: [
-    { label: 'About', href: '/about' },
+  legal: [
     { label: 'Privacy Policy', href: '/privacy' },
     { label: 'Terms of Service', href: '/terms' },
-    { label: 'Contact', href: '/contact' },
   ],
 };
 
@@ -26,7 +17,7 @@ export function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-300">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
@@ -75,28 +66,11 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Resources Links */}
+          {/* Legal Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Resources</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">Legal</h3>
             <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Company</h3>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
+              {footerLinks.legal.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
