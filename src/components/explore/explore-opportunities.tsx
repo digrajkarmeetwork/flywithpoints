@@ -170,6 +170,7 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
                   key={opportunity.id}
                   opportunity={opportunity}
                   index={index}
+                  homeAirport={homeAirport}
                 />
               ))}
             </div>

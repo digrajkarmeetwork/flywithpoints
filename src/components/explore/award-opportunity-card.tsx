@@ -1,20 +1,33 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plane, ArrowRight, Check, TrendingUp, RefreshCw } from 'lucide-react';
+import { Plane, ArrowRight, Check, TrendingUp, RefreshCw, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { AwardOpportunity } from '@/types';
 import { cn } from '@/lib/utils';
+import { getBookingUrl } from '@/lib/booking-urls';
 
 interface AwardOpportunityCardProps {
   opportunity: AwardOpportunity;
   index?: number;
+  homeAirport?: string;
 }
 
-export function AwardOpportunityCard({ opportunity, index = 0 }: AwardOpportunityCardProps) {
+export function AwardOpportunityCard({ opportunity, index = 0, homeAirport }: AwardOpportunityCardProps) {
   const { sweetSpot, program, userBalance, pointsRequired, canAfford, pointsShortfall, percentageOwned, transferSource, estimatedValue } = opportunity;
+
+  // Generate booking URL for this opportunity
+  const bookingUrl = getBookingUrl(
+    sweetSpot.programId,
+    sweetSpot.originRegion,
+    sweetSpot.destinationRegion,
+    sweetSpot.cabinClass,
+    undefined, // Use default date (30 days from now)
+    homeAirport
+  );
 
   // Determine card accent color based on affordability
   const getAccentColor = () => {
@@ -109,11 +122,28 @@ export function AwardOpportunityCard({ opportunity, index = 0 }: AwardOpportunit
           </div>
 
           {/* Booking tips teaser */}
-          {sweetSpot.bookingTips && canAfford && (
+          {sweetSpot.bookingTips && (
             <div className="mt-3 pt-3 border-t border-slate-100">
               <p className="text-xs text-slate-500 line-clamp-2">
                 <span className="font-medium">Tip:</span> {sweetSpot.bookingTips}
               </p>
+            </div>
+          )}
+
+          {/* Check Availability Button */}
+          {bookingUrl && canAfford && (
+            <div className="mt-4">
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Button className="w-full gap-2" size="sm">
+                  Check Availability
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
+              </a>
             </div>
           )}
         </CardContent>
