@@ -22,6 +22,7 @@ import { Footer } from '@/components/layout/footer';
 import { SearchForm } from '@/components/search/search-form';
 import { getTopSweetSpots } from '@/data/sweet-spots';
 import { getCreditCardPrograms, getAirlinePrograms } from '@/data/loyalty-programs';
+import { useUserStore } from '@/stores/user-store';
 
 const features = [
   {
@@ -58,6 +59,7 @@ const stats = [
 ];
 
 export default function HomePage() {
+  const { user } = useUserStore();
   const topSweetSpots = getTopSweetSpots(3);
   const creditCardPrograms = getCreditCardPrograms();
   const airlinePrograms = getAirlinePrograms().slice(0, 8);
@@ -321,49 +323,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="bg-gradient-to-r from-blue-600 to-cyan-500 border-0 text-white overflow-hidden relative">
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-10 left-10">
-                <Plane className="h-32 w-32 transform -rotate-45" />
+      {/* CTA Section - Only show for non-logged-in users */}
+      {!user && (
+        <section className="py-20 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <Card className="bg-gradient-to-r from-blue-600 to-cyan-500 border-0 text-white overflow-hidden relative">
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10">
+                  <Plane className="h-32 w-32 transform -rotate-45" />
+                </div>
+                <div className="absolute bottom-10 right-10">
+                  <Star className="h-24 w-24" />
+                </div>
               </div>
-              <div className="absolute bottom-10 right-10">
-                <Star className="h-24 w-24" />
-              </div>
-            </div>
-            <CardContent className="p-12 text-center relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Start Maximizing Your Points Today
-              </h2>
-              <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-                Create a free account to track your points, set up alerts, and get personalized AI recommendations.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/signup">
-                  <Button
-                    size="lg"
-                    className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
-                  >
-                    Create Free Account
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/search">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white text-white hover:bg-white/10 w-full sm:w-auto"
-                  >
-                    Search Flights
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+              <CardContent className="p-12 text-center relative z-10">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Start Maximizing Your Points Today
+                </h2>
+                <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+                  Create a free account to track your points, set up alerts, and get personalized AI recommendations.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/signup">
+                    <Button
+                      size="lg"
+                      className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+                    >
+                      Create Free Account
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/search">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-white text-white hover:bg-white/10 w-full sm:w-auto"
+                    >
+                      Search Flights
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
