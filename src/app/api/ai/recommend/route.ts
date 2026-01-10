@@ -124,6 +124,28 @@ async function callOpenAI(apiKey: string, prompt: string): Promise<string | null
 }
 
 function getMockRecommendations(searchParams: { origin?: string; destination?: string } | null) {
+  // Dashboard mode: general portfolio recommendations
+  if (!searchParams) {
+    return [
+      {
+        title: 'Maximize Transfer Value',
+        description: 'Transfer credit card points to airline partners for 30-50% more value vs. portal bookings.',
+        reasoning: 'Chase UR, Amex MR, and Citi TYP are most valuable when transferred strategically.',
+      },
+      {
+        title: 'Look for Sweet Spots',
+        description: 'Target high-value redemptions like ANA to Japan (75-90k), Virgin Atlantic to Europe, or Aeroplan mini routes.',
+        reasoning: 'Sweet spot awards offer 2-5x the value of standard redemptions.',
+      },
+      {
+        title: 'Book Premium Cabins',
+        description: 'Points are most valuable for business/first class where cash prices are highest. Economy often makes sense to pay cash.',
+        reasoning: 'Business class awards can deliver 3-10 cents per point in value.',
+      },
+    ];
+  }
+
+  // Search mode: flight-specific recommendations
   const dest = searchParams?.destination || 'your destination';
   return [
     {
@@ -147,15 +169,38 @@ function getMockRecommendations(searchParams: { origin?: string; destination?: s
 
 function buildPrompt(
   pointBalances: { programId: string; programName?: string; balance: number }[],
-  searchParams: { origin: string; destination: string; cabinClass: string },
+  searchParams: { origin: string; destination: string; cabinClass: string } | null,
   flightResults: { programId: string; pointsRequired: number; valueCpp: number }[]
 ): string {
+  // Dashboard mode: general portfolio recommendations (no specific flight search)
+  if (!searchParams) {
+    let prompt = 'Analyze this user\'s points portfolio and provide personalized recommendations:\n\n';
+
+    if (pointBalances && pointBalances.length > 0) {
+      prompt += 'USER\'S CURRENT POINTS BALANCES:\n';
+      pointBalances.forEach((b) => {
+        const name = b.programName || b.programId;
+        prompt += `- ${name}: ${b.balance.toLocaleString()} points\n`;
+      });
+      prompt += '\n';
+    }
+
+    prompt += `Please provide 2-3 specific, actionable recommendations:
+1. Best ways to maximize the value of their current points (sweet spot redemptions, high-value routes)
+2. Current transfer bonuses or promotions they should know about
+3. Strategic tips for their specific portfolio mix
+
+Keep recommendations concise and specific. Focus on actionable advice.
+Format each recommendation with a clear title and brief description.`;
+
+    return prompt;
+  }
+
+  // Search mode: specific flight recommendations
   let prompt = 'Help me find the best way to book this award flight:\n\n';
 
-  if (searchParams) {
-    prompt += `Route: ${searchParams.origin} to ${searchParams.destination}\n`;
-    prompt += `Cabin Class: ${searchParams.cabinClass}\n\n`;
-  }
+  prompt += `Route: ${searchParams.origin} to ${searchParams.destination}\n`;
+  prompt += `Cabin Class: ${searchParams.cabinClass}\n\n`;
 
   if (pointBalances && pointBalances.length > 0) {
     prompt += 'MY CURRENT POINTS BALANCES (use these to give personalized recommendations):\n';

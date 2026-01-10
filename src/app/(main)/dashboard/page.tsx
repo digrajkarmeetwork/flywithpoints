@@ -48,6 +48,12 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
+interface AIRecommendation {
+  title: string;
+  description: string;
+  reasoning?: string;
+}
+
 export default function DashboardPage() {
   const { user, pointBalances, setPointBalances, addPointBalance, updatePointBalance, removePointBalance } =
     useUserStore();
@@ -57,6 +63,8 @@ export default function DashboardPage() {
   const [editingProgram, setEditingProgram] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
   const supabase = createClient();
 
   const topSweetSpots = getTopSweetSpots(3);
@@ -102,6 +110,52 @@ export default function DashboardPage() {
     if (!program) return total;
     return total + (balance.balance * program.baseValueCpp) / 100;
   }, 0);
+
+  // Fetch AI recommendations based on user's point balances
+  const fetchAIRecommendations = async () => {
+    if (pointBalances.length === 0) {
+      setAiRecommendations([]);
+      return;
+    }
+
+    setIsLoadingAI(true);
+    try {
+      const userBalances = pointBalances.map((pb) => {
+        const program = getProgramById(pb.programId);
+        return {
+          programId: pb.programId,
+          programName: program?.name || pb.programId,
+          balance: pb.balance,
+        };
+      });
+
+      const response = await fetch('/api/ai/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pointBalances: userBalances,
+          searchParams: null,
+          flightResults: [],
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAiRecommendations(data.recommendations || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch AI recommendations:', error);
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
+
+  // Fetch AI recommendations when point balances change
+  useEffect(() => {
+    if (!isLoading && pointBalances.length > 0) {
+      fetchAIRecommendations();
+    }
+  }, [pointBalances.length, isLoading]);
 
   const handleAddProgram = async () => {
     if (!selectedProgram || !balanceAmount || !user?.id) return;
@@ -529,26 +583,24 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {pointBalances.length > 0 ? (
-                    <>
-                      <p className="text-sm text-slate-600">
-                        Based on your points portfolio, here are some recommended actions:
-                      </p>
-                      <ul className="space-y-2 text-sm">
-                        <li className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2" />
-                          <span className="text-slate-700">
-                            Transfer Chase UR to Hyatt for 2x value on hotel stays
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2" />
-                          <span className="text-slate-700">
-                            Current 30% bonus on transfers to Flying Blue
-                          </span>
-                        </li>
-                      </ul>
-                    </>
+                  {isLoadingAI ? (
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Analyzing your portfolio...
+                    </div>
+                  ) : pointBalances.length > 0 && aiRecommendations.length > 0 ? (
+                    <div className="space-y-3">
+                      {aiRecommendations.map((rec, index) => (
+                        <div key={index} className="border-b border-blue-100 last:border-0 pb-3 last:pb-0">
+                          <p className="text-sm font-medium text-slate-800">{rec.title}</p>
+                          <p className="text-xs text-slate-600 mt-1">{rec.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : pointBalances.length > 0 ? (
+                    <p className="text-sm text-slate-600">
+                      Unable to load recommendations. Try refreshing the page.
+                    </p>
                   ) : (
                     <p className="text-sm text-slate-600">
                       Add your loyalty programs to get personalized AI recommendations.
