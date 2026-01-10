@@ -1,45 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const SYSTEM_PROMPT = `You are an expert travel rewards advisor. Your job is to help users maximize the value of their points and miles.
+
+You have deep knowledge of:
+- All major airline loyalty programs (United, American, Delta, Alaska, Southwest, etc.)
+- Credit card transfer partners (Chase UR, Amex MR, Citi TYP, Capital One, Bilt)
+- Sweet spot redemptions and best-value routes
+- Transfer bonuses and promotions
+- Points valuations (cents per point)
+
+Always provide specific, actionable recommendations. Include:
+- The exact program to book through
+- Points required
+- Why this is a good value
+- Any tips for finding availability`;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { pointBalances, searchParams, flightResults } = body;
 
-    // Check if OpenAI API key is configured
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      // Return mock recommendations if no API key
-      return NextResponse.json({
-        recommendations: [
-          {
-            title: 'Best Value Transfer',
-            description:
-              'Based on your search, consider transferring Chase Ultimate Rewards to Virgin Atlantic for booking ANA flights to Japan at excellent value.',
-            savings: 15000,
-            reasoning:
-              'Virgin Atlantic charges only 120,000 points for ANA First Class round-trip, compared to 250,000+ through United.',
-          },
-          {
-            title: 'Current Transfer Bonus',
-            description:
-              'Flying Blue is offering 25% bonus on transfers from Amex MR through the end of the month.',
-            reasoning:
-              'This limited-time promotion increases the value of your Amex points when transferred to Air France/KLM.',
-          },
-          {
-            title: 'Alternative Route',
-            description:
-              'Consider flying to a nearby airport for significant points savings.',
-            reasoning:
-              'Award availability is often better at secondary airports, and you may save thousands of points.',
-          },
-        ],
-      });
-    }
-
-    // Build the prompt for OpenAI
+    // Build the prompt
     const prompt = buildPrompt(pointBalances, searchParams, flightResults);
 
+    // Try Google Gemini first (free tier), then OpenAI, then fallback to mock
+    const geminiKey = process.env.GOOGLE_GEMINI_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
+
+    let aiResponse: string | null = null;
+
+    if (geminiKey) {
+      aiResponse = await callGemini(geminiKey, prompt);
+    } else if (openaiKey) {
+      aiResponse = await callOpenAI(openaiKey, prompt);
+    }
+
+    if (aiResponse) {
+      const recommendations = parseAIResponse(aiResponse);
+      return NextResponse.json({ recommendations });
+    }
+
+    // Return mock recommendations if no API key configured
+    return NextResponse.json({
+      recommendations: getMockRecommendations(searchParams),
+    });
+  } catch (error) {
+    console.error('AI recommendation error:', error);
+    // Return mock on error instead of failing
+    return NextResponse.json({
+      recommendations: getMockRecommendations(null),
+    });
+  }
+}
+
+async function callGemini(apiKey: string, prompt: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: SYSTEM_PROMPT + '\n\n' + prompt }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Gemini API error:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch (error) {
+    console.error('Gemini call failed:', error);
+    return null;
+  }
+}
+
+async function callOpenAI(apiKey: string, prompt: string): Promise<string | null> {
+  try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -49,27 +102,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          {
-            role: 'system',
-            content: `You are an expert travel rewards advisor. Your job is to help users maximize the value of their points and miles.
-
-            You have deep knowledge of:
-            - All major airline loyalty programs (United, American, Delta, Alaska, Southwest, etc.)
-            - Credit card transfer partners (Chase UR, Amex MR, Citi TYP, Capital One, Bilt)
-            - Sweet spot redemptions and best-value routes
-            - Transfer bonuses and promotions
-            - Points valuations (cents per point)
-
-            Always provide specific, actionable recommendations. Include:
-            - The exact program to book through
-            - Points required
-            - Why this is a good value
-            - Any tips for finding availability`,
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: prompt },
         ],
         temperature: 0.7,
         max_tokens: 1000,
@@ -77,23 +111,38 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error('OpenAI API error');
+      console.error('OpenAI API error:', response.status);
+      return null;
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
-
-    // Parse the AI response into structured recommendations
-    const recommendations = parseAIResponse(aiResponse);
-
-    return NextResponse.json({ recommendations });
+    return data.choices?.[0]?.message?.content || null;
   } catch (error) {
-    console.error('AI recommendation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate recommendations' },
-      { status: 500 }
-    );
+    console.error('OpenAI call failed:', error);
+    return null;
   }
+}
+
+function getMockRecommendations(searchParams: { origin?: string; destination?: string } | null) {
+  const dest = searchParams?.destination || 'your destination';
+  return [
+    {
+      title: 'Best Value Transfer',
+      description: `For flights to ${dest}, consider transferring Chase Ultimate Rewards or Amex MR to partner airlines for the best redemption value.`,
+      savings: 15000,
+      reasoning: 'Transfer partners often offer better award rates than booking directly, especially for premium cabins.',
+    },
+    {
+      title: 'Check Partner Airlines',
+      description: 'Look for availability on partner airlines through programs like United, Aeroplan, or Virgin Atlantic.',
+      reasoning: 'Partner bookings can unlock sweet spot redemptions that save 30-50% compared to standard awards.',
+    },
+    {
+      title: 'Flexibility Pays Off',
+      description: 'Being flexible with dates by even 1-2 days can reveal significantly better award availability.',
+      reasoning: 'Award seats are limited and vary greatly by date. Mid-week flights often have better availability.',
+    },
+  ];
 }
 
 function buildPrompt(
