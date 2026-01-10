@@ -146,7 +146,7 @@ function getMockRecommendations(searchParams: { origin?: string; destination?: s
 }
 
 function buildPrompt(
-  pointBalances: { programId: string; balance: number }[],
+  pointBalances: { programId: string; programName?: string; balance: number }[],
   searchParams: { origin: string; destination: string; cabinClass: string },
   flightResults: { programId: string; pointsRequired: number; valueCpp: number }[]
 ): string {
@@ -158,27 +158,33 @@ function buildPrompt(
   }
 
   if (pointBalances && pointBalances.length > 0) {
-    prompt += 'My current points balances:\n';
+    prompt += 'MY CURRENT POINTS BALANCES (use these to give personalized recommendations):\n';
     pointBalances.forEach((b) => {
-      prompt += `- ${b.programId}: ${b.balance.toLocaleString()} points\n`;
+      const name = b.programName || b.programId;
+      prompt += `- ${name}: ${b.balance.toLocaleString()} points\n`;
     });
     prompt += '\n';
+  } else {
+    prompt += 'User has not added any points balances yet.\n\n';
   }
 
   if (flightResults && flightResults.length > 0) {
-    prompt += 'Available options found:\n';
+    prompt += 'Available award options found:\n';
     flightResults.slice(0, 5).forEach((f) => {
       prompt += `- ${f.programId}: ${f.pointsRequired.toLocaleString()} points (${f.valueCpp} cpp value)\n`;
     });
     prompt += '\n';
   }
 
-  prompt += `Please provide 2-3 specific recommendations on:
-1. The best program to book through and why
-2. Any transfer strategies to optimize value
-3. Tips for finding award availability
+  prompt += `Please provide 2-3 specific recommendations:
+1. Based on the user's point balances, which program should they use to book this flight?
+2. If they don't have enough points, suggest transfer strategies (e.g., transfer Chase UR to United)
+3. Tips for finding award availability on this route
 
-Format each recommendation with a title, description, and reasoning.`;
+IMPORTANT: If the user has point balances, prioritize recommendations that use their existing points.
+Tell them exactly how many points they need and if they have enough.
+
+Format each recommendation with a clear title and actionable description.`;
 
   return prompt;
 }

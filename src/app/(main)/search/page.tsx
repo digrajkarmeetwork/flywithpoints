@@ -19,8 +19,9 @@ import { Footer } from '@/components/layout/footer';
 import { SearchForm } from '@/components/search/search-form';
 import { FlightCard } from '@/components/search/flight-card';
 import { useSearchStore, useFilteredResults } from '@/stores/search-store';
+import { useUserStore } from '@/stores/user-store';
 import { mockSearchFlights } from '@/data/mock-flights';
-import { getAirlinePrograms } from '@/data/loyalty-programs';
+import { getAirlinePrograms, getProgramById } from '@/data/loyalty-programs';
 import { getAirportByCode } from '@/data/airports';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +42,7 @@ function SearchContent() {
     filters,
     setFilters,
   } = useSearchStore();
+  const { pointBalances } = useUserStore();
   const filteredResults = useFilteredResults();
   const [showFilters, setShowFilters] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
@@ -60,10 +62,21 @@ function SearchContent() {
 
     setIsLoadingAI(true);
     try {
+      // Include user's point balances with program names for better AI context
+      const userBalances = pointBalances.map((pb) => {
+        const program = getProgramById(pb.programId);
+        return {
+          programId: pb.programId,
+          programName: program?.name || pb.programId,
+          balance: pb.balance,
+        };
+      });
+
       const response = await fetch('/api/ai/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          pointBalances: userBalances,
           searchParams: { origin, destination, cabinClass: cabin },
           flightResults: filteredResults.slice(0, 5).map((f) => ({
             programId: f.programId,
