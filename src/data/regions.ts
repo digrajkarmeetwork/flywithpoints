@@ -49,6 +49,12 @@ export const destinationRegions: DestinationRegion[] = [
     countries: ['Canada'],
     airports: ['YYZ', 'YVR', 'YUL', 'YYC', 'YOW'],
   },
+  {
+    id: 'north-america',
+    name: 'North America',
+    countries: ['United States', 'Canada', 'Mexico'],
+    airports: ['JFK', 'LAX', 'ORD', 'DFW', 'DEN', 'SFO', 'SEA', 'ATL', 'BOS', 'MIA', 'IAD', 'IAH', 'PHX', 'LAS', 'MSP', 'DTW', 'PHL', 'CLT', 'YYZ', 'YVR', 'YUL', 'MEX', 'CUN'],
+  },
 ];
 
 // Hub airports for positioning flights (US major hubs with good international connections)
@@ -159,6 +165,8 @@ export function getBestHubsForRegion(regionId: string): string[] {
       return ['JFK', 'IAD', 'ATL']; // East coast for Africa
     case 'canada':
       return ['SEA', 'ORD', 'BOS', 'JFK']; // Northern cities
+    case 'north-america':
+      return ['ORD', 'DFW', 'ATL', 'DEN']; // Central US hubs for domestic
     default:
       return ['JFK', 'LAX', 'ORD']; // Major hubs as default
   }
