@@ -119,3 +119,51 @@ export interface TransferPath {
   ratio: string;
   bonus?: number;
 }
+
+// Explore Feature Types
+
+export interface DestinationRegion {
+  id: string;
+  name: string;
+  countries: string[];
+  airports: string[];
+}
+
+export interface AccessibleProgram {
+  programId: string;
+  program: LoyaltyProgram;
+  balance: number;
+  source: 'direct' | 'transfer';
+  transferFrom?: {
+    programId: string;
+    programName: string;
+    balance: number;
+  };
+}
+
+export interface AwardOpportunity {
+  id: string;
+  sweetSpot: SweetSpot;
+  program: LoyaltyProgram;
+  userBalance: number;
+  pointsRequired: number;
+  canAfford: boolean;
+  pointsShortfall: number;
+  percentageOwned: number;
+  transferSource?: {
+    programId: string;
+    programName: string;
+    balance: number;
+  };
+  estimatedValue: number;
+}
+
+export interface PositioningOption {
+  id: string;
+  alternateOrigin: string;
+  alternateOriginCity: string;
+  awardOpportunity: AwardOpportunity;
+  estimatedPositioningCost: number;
+  totalValue: number;
+  reasoning: string;
+}

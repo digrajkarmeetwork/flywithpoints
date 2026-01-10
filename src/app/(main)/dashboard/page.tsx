@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/select';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
+import { ExploreOpportunitiesSection } from '@/components/explore/explore-opportunities';
 import { useUserStore } from '@/stores/user-store';
 import { loyaltyPrograms, getProgramById } from '@/data/loyalty-programs';
 import { getTopSweetSpots } from '@/data/sweet-spots';
@@ -332,6 +333,11 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Explore Opportunities Section */}
+          <div className="mb-8">
+            <ExploreOpportunitiesSection pointBalances={pointBalances} />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
