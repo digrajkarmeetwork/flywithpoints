@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { User, Mail, Bell, Shield, Trash2, Loader2, Save, ArrowLeft } from 'lucide-react';
+import { User as UserIcon, Mail, Bell, Shield, Trash2, Loader2, Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +18,12 @@ import { useUserStore } from '@/stores/user-store';
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile, setProfile } = useUserStore();
+  const { user, setUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
-    fullName: '',
+    displayName: '',
     email: '',
   });
 
@@ -41,10 +41,10 @@ export default function SettingsPage() {
     }
 
     setFormData({
-      fullName: profile?.full_name || '',
+      displayName: user.displayName || '',
       email: user.email || '',
     });
-  }, [user, profile, router]);
+  }, [user, router]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -53,12 +53,12 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: formData.fullName })
+        .update({ full_name: formData.displayName })
         .eq('id', user.id);
 
       if (error) throw error;
 
-      setProfile({ ...profile, full_name: formData.fullName });
+      setUser({ ...user, displayName: formData.displayName });
       toast.success('Profile updated successfully');
     } catch {
       toast.error('Failed to update profile');
@@ -117,7 +117,7 @@ export default function SettingsPage() {
           <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="bg-white border border-slate-200">
               <TabsTrigger value="profile" className="gap-2">
-                <User className="h-4 w-4" />
+                <UserIcon className="h-4 w-4" />
                 Profile
               </TabsTrigger>
               <TabsTrigger value="notifications" className="gap-2">
@@ -141,12 +141,12 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="displayName">Display Name</Label>
                     <Input
-                      id="fullName"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      placeholder="Enter your full name"
+                      id="displayName"
+                      value={formData.displayName}
+                      onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                      placeholder="Enter your display name"
                     />
                   </div>
                   <div className="space-y-2">
