@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -16,6 +16,7 @@ import {
   Edit2,
   Trash2,
   Settings,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -44,16 +45,56 @@ import { useUserStore } from '@/stores/user-store';
 import { loyaltyPrograms, getProgramById } from '@/data/loyalty-programs';
 import { getTopSweetSpots } from '@/data/sweet-spots';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
-  const { user, pointBalances, addPointBalance, updatePointBalance, removePointBalance } =
+  const { user, pointBalances, setPointBalances, addPointBalance, updatePointBalance, removePointBalance } =
     useUserStore();
   const [isAddingProgram, setIsAddingProgram] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState('');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [editingProgram, setEditingProgram] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = createClient();
 
   const topSweetSpots = getTopSweetSpots(3);
+
+  // Load point balances from Supabase on mount
+  useEffect(() => {
+    async function loadPointBalances() {
+      if (!user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('point_balances')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        if (data) {
+          const balances = data.map((item) => ({
+            id: item.id,
+            programId: item.program_id,
+            balance: item.balance,
+            lastUpdated: item.last_updated,
+          }));
+          setPointBalances(balances);
+        }
+      } catch (error) {
+        console.error('Error loading point balances:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadPointBalances();
+  }, [user?.id, supabase, setPointBalances]);
 
   // Calculate total value
   const totalValue = pointBalances.reduce((total, balance) => {
@@ -62,24 +103,88 @@ export default function DashboardPage() {
     return total + (balance.balance * program.baseValueCpp) / 100;
   }, 0);
 
-  const handleAddProgram = () => {
-    if (!selectedProgram || !balanceAmount) return;
+  const handleAddProgram = async () => {
+    if (!selectedProgram || !balanceAmount || !user?.id) return;
 
-    addPointBalance({
-      id: `${selectedProgram}-${Date.now()}`,
-      programId: selectedProgram,
-      balance: parseInt(balanceAmount),
-      lastUpdated: new Date().toISOString(),
-    });
+    setIsSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from('point_balances')
+        .insert({
+          user_id: user.id,
+          program_id: selectedProgram,
+          balance: parseInt(balanceAmount),
+        })
+        .select()
+        .single();
 
-    setSelectedProgram('');
-    setBalanceAmount('');
-    setIsAddingProgram(false);
+      if (error) throw error;
+
+      addPointBalance({
+        id: data.id,
+        programId: data.program_id,
+        balance: data.balance,
+        lastUpdated: data.last_updated,
+      });
+
+      toast.success('Program added successfully');
+      setSelectedProgram('');
+      setBalanceAmount('');
+      setIsAddingProgram(false);
+    } catch (error) {
+      console.error('Error adding program:', error);
+      toast.error('Failed to add program');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleUpdateBalance = (programId: string, newBalance: string) => {
-    updatePointBalance(programId, parseInt(newBalance) || 0);
+  const handleUpdateBalance = async (programId: string, newBalance: string) => {
+    if (!user?.id) return;
+
+    const balance = pointBalances.find((b) => b.programId === programId);
+    if (!balance) return;
+
+    try {
+      const { error } = await supabase
+        .from('point_balances')
+        .update({
+          balance: parseInt(newBalance) || 0,
+          last_updated: new Date().toISOString(),
+        })
+        .eq('id', balance.id);
+
+      if (error) throw error;
+
+      updatePointBalance(programId, parseInt(newBalance) || 0);
+      toast.success('Balance updated');
+    } catch (error) {
+      console.error('Error updating balance:', error);
+      toast.error('Failed to update balance');
+    }
     setEditingProgram(null);
+  };
+
+  const handleRemoveProgram = async (programId: string) => {
+    if (!user?.id) return;
+
+    const balance = pointBalances.find((b) => b.programId === programId);
+    if (!balance) return;
+
+    try {
+      const { error } = await supabase
+        .from('point_balances')
+        .delete()
+        .eq('id', balance.id);
+
+      if (error) throw error;
+
+      removePointBalance(programId);
+      toast.success('Program removed');
+    } catch (error) {
+      console.error('Error removing program:', error);
+      toast.error('Failed to remove program');
+    }
   };
 
   const availablePrograms = loyaltyPrograms.filter(
@@ -243,17 +348,28 @@ export default function DashboardPage() {
                         </Button>
                         <Button
                           onClick={handleAddProgram}
-                          disabled={!selectedProgram || !balanceAmount}
+                          disabled={!selectedProgram || !balanceAmount || isSaving}
                           className="bg-blue-600 hover:bg-blue-700"
                         >
-                          Add Program
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            'Add Program'
+                          )}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
                 <CardContent>
-                  {pointBalances.length > 0 ? (
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    </div>
+                  ) : pointBalances.length > 0 ? (
                     <div className="space-y-3">
                       {pointBalances.map((balance) => {
                         const program = getProgramById(balance.programId);
@@ -333,7 +449,7 @@ export default function DashboardPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => removePointBalance(balance.programId)}
+                                  onClick={() => handleRemoveProgram(balance.programId)}
                                 >
                                   <Trash2 className="h-4 w-4 text-slate-400" />
                                 </Button>
