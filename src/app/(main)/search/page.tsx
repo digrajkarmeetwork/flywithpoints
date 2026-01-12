@@ -20,16 +20,25 @@ import { SearchForm } from '@/components/search/search-form';
 import { FlightCard } from '@/components/search/flight-card';
 import { useSearchStore, useFilteredResults } from '@/stores/search-store';
 import { useUserStore } from '@/stores/user-store';
-import { mockSearchFlights } from '@/data/mock-flights';
 import { getAirlinePrograms, getProgramById } from '@/data/loyalty-programs';
 import { getAirportByCode } from '@/data/airports';
 import { cn } from '@/lib/utils';
+import { AwardFlight } from '@/types';
 
 interface AIRecommendation {
   title: string;
   description: string;
   reasoning?: string;
   savings?: number;
+}
+
+interface FlightSearchResponse {
+  flights: AwardFlight[];
+  source: 'seats.aero' | 'mock';
+  count?: number;
+  lastUpdated?: string;
+  message?: string;
+  error?: string;
 }
 
 function SearchContent() {
@@ -47,6 +56,8 @@ function SearchContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [dataSource, setDataSource] = useState<'seats.aero' | 'mock' | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
@@ -108,9 +119,34 @@ function SearchContent() {
 
       const fetchResults = async () => {
         setSearching(true);
+        setDataSource(null);
+        setLastUpdated(null);
+
         try {
-          const results = await mockSearchFlights(origin, destination, date, cabin);
-          setResults(results);
+          // Calculate end date (7 days from start for flexible searching)
+          const startDate = new Date(date);
+          const endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 7);
+
+          const params = new URLSearchParams({
+            origin,
+            destination,
+            start_date: date,
+            end_date: endDate.toISOString().split('T')[0],
+            cabin,
+          });
+
+          const response = await fetch(`/api/flights/search?${params}`);
+          const data: FlightSearchResponse = await response.json();
+
+          setResults(data.flights);
+          setDataSource(data.source);
+          if (data.lastUpdated) {
+            setLastUpdated(data.lastUpdated);
+          }
+        } catch (error) {
+          console.error('Failed to fetch flights:', error);
+          setResults([]);
         } finally {
           setSearching(false);
         }
@@ -320,9 +356,26 @@ function SearchContent() {
                 ) : filteredResults.length > 0 ? (
                   <>
                     <div className="flex items-center justify-between mb-4">
-                      <Badge variant="outline" className="bg-white">
-                        {filteredResults.length} flights found
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-white">
+                          {filteredResults.length} flights found
+                        </Badge>
+                        {dataSource === 'seats.aero' && (
+                          <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                            Live Data
+                          </Badge>
+                        )}
+                        {dataSource === 'mock' && (
+                          <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">
+                            Sample Data
+                          </Badge>
+                        )}
+                      </div>
+                      {lastUpdated && (
+                        <span className="text-xs text-slate-400">
+                          Updated {new Date(lastUpdated).toLocaleTimeString()}
+                        </span>
+                      )}
                     </div>
                     {filteredResults.map((flight, index) => (
                       <FlightCard key={flight.id} flight={flight} index={index} />

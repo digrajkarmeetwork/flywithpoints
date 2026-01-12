@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plane, ArrowRight, Check, TrendingUp, RefreshCw, ExternalLink } from 'lucide-react';
+import { Plane, ArrowRight, Check, TrendingUp, RefreshCw, ExternalLink, Radio } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,10 @@ interface AwardOpportunityCardProps {
   opportunity: AwardOpportunity;
   index?: number;
   homeAirport?: string;
+  liveFlightCount?: number;
 }
 
-export function AwardOpportunityCard({ opportunity, index = 0, homeAirport }: AwardOpportunityCardProps) {
+export function AwardOpportunityCard({ opportunity, index = 0, homeAirport, liveFlightCount }: AwardOpportunityCardProps) {
   const { sweetSpot, program, userBalance, pointsRequired, canAfford, pointsShortfall, percentageOwned, transferSource, estimatedValue } = opportunity;
 
   // Generate booking URL for this opportunity
@@ -71,9 +72,17 @@ export function AwardOpportunityCard({ opportunity, index = 0, homeAirport }: Aw
                 <p className="text-xs text-slate-500">{formatCabinClass(sweetSpot.cabinClass)}</p>
               </div>
             </div>
-            <Badge variant="outline" className={cn('text-xs', getValueBadgeColor())}>
-              {sweetSpot.valueCpp.toFixed(1)} cpp
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              {liveFlightCount && liveFlightCount > 0 && (
+                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 gap-1">
+                  <Radio className="h-2.5 w-2.5" />
+                  {liveFlightCount} live
+                </Badge>
+              )}
+              <Badge variant="outline" className={cn('text-xs', getValueBadgeColor())}>
+                {sweetSpot.valueCpp.toFixed(1)} cpp
+              </Badge>
+            </div>
           </div>
 
           {/* Title and description */}

@@ -1,17 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, MapPin, Loader2, Compass, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, MapPin, Loader2, Compass, ChevronDown, ChevronUp, Radio, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DestinationInput } from './destination-input';
 import { AwardOpportunityCard } from './award-opportunity-card';
 import { PositioningCard } from './positioning-card';
-import { AwardOpportunity, PositioningOption, PointBalance } from '@/types';
-import { getAwardOpportunities, getPositioningOptions, getOpportunitySummary } from '@/data/explore-opportunities';
+import { AwardOpportunity, PositioningOption, PointBalance, AwardFlight } from '@/types';
+import { getAwardOpportunities, getPositioningOptions, getOpportunitySummary, getAccessiblePrograms } from '@/data/explore-opportunities';
 import { AirportInput } from '@/components/search/airport-input';
+
+interface LiveAvailabilityData {
+  programId: string;
+  flights: AwardFlight[];
+  lastUpdated: string;
+}
+
+interface AvailabilityResponse {
+  flights: AwardFlight[];
+  source: string;
+  lastUpdated?: string;
+  error?: string;
+}
 
 interface ExploreOpportunitiesSectionProps {
   pointBalances: PointBalance[];
@@ -25,6 +38,63 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
   const [isLoading, setIsLoading] = useState(false);
   const [showAllOpportunities, setShowAllOpportunities] = useState(false);
   const [showPositioning, setShowPositioning] = useState(false);
+
+  // Live availability state
+  const [liveAvailability, setLiveAvailability] = useState<Map<string, LiveAvailabilityData>>(new Map());
+  const [isLoadingLive, setIsLoadingLive] = useState(false);
+  const [liveDataSource, setLiveDataSource] = useState<'seats.aero' | 'unavailable' | null>(null);
+
+  // Fetch live availability for a program
+  const fetchLiveAvailability = useCallback(async (programId: string) => {
+    try {
+      const response = await fetch(`/api/flights/availability?program_id=${programId}`);
+      const data: AvailabilityResponse = await response.json();
+
+      if (data.source === 'seats.aero' && data.flights.length > 0) {
+        setLiveAvailability(prev => {
+          const newMap = new Map(prev);
+          newMap.set(programId, {
+            programId,
+            flights: data.flights,
+            lastUpdated: data.lastUpdated || new Date().toISOString(),
+          });
+          return newMap;
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error(`Failed to fetch live availability for ${programId}:`, error);
+      return false;
+    }
+  }, []);
+
+  // Fetch live availability for all accessible programs
+  const fetchAllLiveAvailability = useCallback(async () => {
+    if (pointBalances.length === 0) return;
+
+    setIsLoadingLive(true);
+    const accessiblePrograms = getAccessiblePrograms(pointBalances);
+
+    // Only fetch for unique airline programs (not credit cards)
+    const airlineProgramIds = [...new Set(
+      accessiblePrograms
+        .filter(p => p.program.type === 'airline')
+        .map(p => p.programId)
+    )];
+
+    let hasLiveData = false;
+
+    // Fetch in parallel but limit to 3 concurrent requests to be nice to the API
+    for (let i = 0; i < airlineProgramIds.length; i += 3) {
+      const batch = airlineProgramIds.slice(i, i + 3);
+      const results = await Promise.all(batch.map(fetchLiveAvailability));
+      if (results.some(r => r)) hasLiveData = true;
+    }
+
+    setLiveDataSource(hasLiveData ? 'seats.aero' : 'unavailable');
+    setIsLoadingLive(false);
+  }, [pointBalances, fetchLiveAvailability]);
 
   // Load opportunities when destination or points change
   useEffect(() => {
@@ -54,6 +124,22 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
 
     return () => clearTimeout(timer);
   }, [pointBalances, destination, homeAirport]);
+
+  // Fetch live availability when point balances change
+  useEffect(() => {
+    if (pointBalances.length > 0) {
+      fetchAllLiveAvailability();
+    }
+  }, [pointBalances, fetchAllLiveAvailability]);
+
+  // Get live flight count for a program
+  const getLiveFlightCount = (programId: string): number => {
+    const data = liveAvailability.get(programId);
+    return data?.flights.length || 0;
+  };
+
+  // Check if we have any live data
+  const hasLiveData = liveAvailability.size > 0;
 
   const summary = getOpportunitySummary(opportunities);
   const displayedOpportunities = showAllOpportunities ? opportunities : opportunities.slice(0, 4);
@@ -127,6 +213,23 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
                 Filtered: {destination}
               </Badge>
             )}
+            {/* Live data indicator */}
+            {isLoadingLive ? (
+              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Checking live availability...
+              </Badge>
+            ) : hasLiveData ? (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
+                <Wifi className="h-3 w-3" />
+                Live data from seats.aero
+              </Badge>
+            ) : liveDataSource === 'unavailable' ? (
+              <Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 gap-1">
+                <WifiOff className="h-3 w-3" />
+                Using cached data
+              </Badge>
+            ) : null}
           </div>
         )}
 
@@ -171,6 +274,7 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
                   opportunity={opportunity}
                   index={index}
                   homeAirport={homeAirport}
+                  liveFlightCount={getLiveFlightCount(opportunity.program.id)}
                 />
               ))}
             </div>
