@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plane, Clock, ArrowRight, Sparkles, ExternalLink } from 'lucide-react';
+import { Plane, Clock, ArrowRight, Sparkles, ExternalLink, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,25 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
       .join(' ');
   };
 
+  // Format date nicely
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return null;
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Check if we have specific flight times (from mock data) vs just availability (from seats.aero)
+  const hasSpecificTimes = flight.departureTime && flight.arrivalTime && flight.departureTime.length > 0;
+  const isLiveData = flight.source === 'seats.aero';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -50,7 +69,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
           <div className="flex flex-col lg:flex-row">
             {/* Flight Info */}
             <div className="flex-1 p-6">
-              {/* Airline and Flight Number */}
+              {/* Airline and Flight Info */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
                   <Plane className="h-5 w-5 text-slate-600" />
@@ -58,34 +77,58 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 <div>
                   <p className="font-medium text-slate-900">{flight.airline}</p>
                   <p className="text-sm text-slate-500">
-                    {flight.flightNumber} • {flight.aircraft || 'Aircraft TBD'}
+                    {flight.flightNumber ? `${flight.flightNumber} • ` : ''}
+                    {flight.aircraft || (isLiveData ? 'Multiple flight options' : '')}
                   </p>
                 </div>
-                <Badge variant="outline" className="ml-auto">
-                  {formatCabinClass(flight.cabinClass)}
-                </Badge>
+                <div className="ml-auto flex items-center gap-2">
+                  {isLiveData && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                      Live
+                    </Badge>
+                  )}
+                  <Badge variant="outline">
+                    {formatCabinClass(flight.cabinClass)}
+                  </Badge>
+                </div>
               </div>
 
-              {/* Route and Times */}
+              {/* Route Display */}
               <div className="flex items-center gap-4 mb-4">
-                {/* Departure */}
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-900">
-                    {flight.departureTime}
-                  </p>
+                {/* Origin */}
+                <div className="text-center min-w-[80px]">
+                  {hasSpecificTimes ? (
+                    <p className="text-2xl font-bold text-slate-900">
+                      {flight.departureTime}
+                    </p>
+                  ) : (
+                    <p className="text-2xl font-bold text-slate-900">
+                      {flight.origin}
+                    </p>
+                  )}
                   <p className="text-sm font-medium text-slate-700">
-                    {flight.origin}
+                    {hasSpecificTimes ? flight.origin : ''}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {originAirport?.city || flight.origin}
+                    {originAirport?.city || ''}
                   </p>
                 </div>
 
-                {/* Duration and Stops */}
+                {/* Route Line */}
                 <div className="flex-1 flex flex-col items-center px-4">
+                  {/* Duration or Date */}
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    {flight.duration}
+                    {flight.duration ? (
+                      <>
+                        <Clock className="h-3.5 w-3.5" />
+                        {flight.duration}
+                      </>
+                    ) : flight.departureDate ? (
+                      <>
+                        <Calendar className="h-3.5 w-3.5" />
+                        {formatDate(flight.departureDate)}
+                      </>
+                    ) : null}
                   </div>
                   <div className="w-full flex items-center gap-2">
                     <div className="h-px flex-1 bg-slate-300" />
@@ -95,20 +138,28 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                   <p className="text-xs text-slate-500 mt-1">
                     {flight.stops === 0
                       ? 'Nonstop'
-                      : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
+                      : flight.stops === 1
+                      ? '1 stop'
+                      : `${flight.stops}+ stops`}
                   </p>
                 </div>
 
-                {/* Arrival */}
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-900">
-                    {flight.arrivalTime}
-                  </p>
+                {/* Destination */}
+                <div className="text-center min-w-[80px]">
+                  {hasSpecificTimes ? (
+                    <p className="text-2xl font-bold text-slate-900">
+                      {flight.arrivalTime}
+                    </p>
+                  ) : (
+                    <p className="text-2xl font-bold text-slate-900">
+                      {flight.destination}
+                    </p>
+                  )}
                   <p className="text-sm font-medium text-slate-700">
-                    {flight.destination}
+                    {hasSpecificTimes ? flight.destination : ''}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {destAirport?.city || flight.destination}
+                    {destAirport?.city || ''}
                   </p>
                 </div>
               </div>
