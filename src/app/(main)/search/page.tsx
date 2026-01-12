@@ -34,7 +34,7 @@ interface AIRecommendation {
 
 interface FlightSearchResponse {
   flights: AwardFlight[];
-  source: 'seats.aero' | 'mock';
+  source: 'seats.aero' | 'mock' | 'error';
   count?: number;
   lastUpdated?: string;
   message?: string;
@@ -56,8 +56,9 @@ function SearchContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
-  const [dataSource, setDataSource] = useState<'seats.aero' | 'mock' | null>(null);
+  const [dataSource, setDataSource] = useState<'seats.aero' | 'mock' | 'error' | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
@@ -121,6 +122,7 @@ function SearchContent() {
         setSearching(true);
         setDataSource(null);
         setLastUpdated(null);
+        setErrorMessage(null);
 
         try {
           // Calculate end date (7 days from start for flexible searching)
@@ -144,9 +146,14 @@ function SearchContent() {
           if (data.lastUpdated) {
             setLastUpdated(data.lastUpdated);
           }
+          if (data.error) {
+            setErrorMessage(data.error);
+          }
         } catch (error) {
           console.error('Failed to fetch flights:', error);
           setResults([]);
+          setDataSource('error');
+          setErrorMessage(error instanceof Error ? error.message : 'Network error');
         } finally {
           setSearching(false);
         }
@@ -362,12 +369,12 @@ function SearchContent() {
                         </Badge>
                         {dataSource === 'seats.aero' && (
                           <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
-                            Live Data
+                            Live Data from seats.aero
                           </Badge>
                         )}
-                        {dataSource === 'mock' && (
-                          <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">
-                            Sample Data
+                        {dataSource === 'error' && (
+                          <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+                            API Error
                           </Badge>
                         )}
                       </div>
@@ -385,14 +392,20 @@ function SearchContent() {
                   <Card className="p-12 text-center">
                     <Plane className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-slate-900 mb-2">
-                      No flights found
+                      {dataSource === 'error' ? 'Error loading flights' : 'No flights found'}
                     </h3>
                     <p className="text-slate-500 mb-4">
-                      Try adjusting your search or filters to find available flights.
+                      {errorMessage ? (
+                        <span className="text-red-600">{errorMessage}</span>
+                      ) : (
+                        'Try adjusting your search or filters to find available flights.'
+                      )}
                     </p>
-                    <Button variant="outline" onClick={() => setFilters({ programs: [], maxStops: null })}>
-                      Clear Filters
-                    </Button>
+                    {dataSource !== 'error' && (
+                      <Button variant="outline" onClick={() => setFilters({ programs: [], maxStops: null })}>
+                        Clear Filters
+                      </Button>
+                    )}
                   </Card>
                 )}
               </div>

@@ -4,7 +4,6 @@ import {
   transformSearchResponse,
   CabinClass,
 } from '@/lib/seats-aero';
-import { generateMockFlights } from '@/data/mock-flights';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,34 +19,31 @@ export async function GET(request: NextRequest) {
   // Validate required parameters
   if (!origin || !destination) {
     return NextResponse.json(
-      { error: 'Origin and destination are required' },
+      { error: 'Origin and destination are required', flights: [] },
       { status: 400 }
     );
   }
 
   if (!startDate) {
     return NextResponse.json(
-      { error: 'Start date is required' },
+      { error: 'Start date is required', flights: [] },
       { status: 400 }
     );
   }
 
+  // Check if API key is configured
+  if (!process.env.SEATS_AERO_API_KEY) {
+    console.error('[flights/search] SEATS_AERO_API_KEY is not configured');
+    return NextResponse.json({
+      flights: [],
+      source: 'error',
+      error: 'SEATS_AERO_API_KEY environment variable is not configured',
+      message: 'Please add SEATS_AERO_API_KEY to your environment variables',
+    });
+  }
+
   try {
-    // Check if API key is configured
-    if (!process.env.SEATS_AERO_API_KEY) {
-      console.log('[flights/search] No API key configured, using mock data');
-      const mockFlights = generateMockFlights(
-        origin,
-        destination,
-        startDate,
-        cabin || 'economy'
-      );
-      return NextResponse.json({
-        flights: mockFlights,
-        source: 'mock',
-        message: 'Using mock data - configure SEATS_AERO_API_KEY for real data',
-      });
-    }
+    console.log(`[flights/search] Searching ${origin} -> ${destination}, ${startDate} to ${endDate}, cabin: ${cabin}`);
 
     // Search seats.aero API
     const response = await searchFlights(
@@ -58,22 +54,20 @@ export async function GET(request: NextRequest) {
       cabin || undefined
     );
 
+    console.log(`[flights/search] Got ${response.data?.length || 0} availability records from seats.aero`);
+
     // Transform to our AwardFlight format
     const flights = transformSearchResponse(response, cabin || undefined);
 
-    // If no results from API, fall back to mock data
+    console.log(`[flights/search] Transformed to ${flights.length} flights`);
+
     if (flights.length === 0) {
-      console.log('[flights/search] No results from API, using mock data');
-      const mockFlights = generateMockFlights(
-        origin,
-        destination,
-        startDate,
-        cabin || 'economy'
-      );
       return NextResponse.json({
-        flights: mockFlights,
-        source: 'mock',
-        message: 'No award availability found - showing example data',
+        flights: [],
+        source: 'seats.aero',
+        count: 0,
+        message: 'No award availability found for this route and date range',
+        lastUpdated: new Date().toISOString(),
       });
     }
 
@@ -86,19 +80,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[flights/search] Error:', error);
 
-    // Fall back to mock data on error
-    const mockFlights = generateMockFlights(
-      origin,
-      destination,
-      startDate,
-      cabin || 'economy'
-    );
-
     return NextResponse.json({
-      flights: mockFlights,
-      source: 'mock',
+      flights: [],
+      source: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
-      message: 'API error - showing example data',
+      message: 'Failed to fetch from seats.aero API',
     });
   }
 }
