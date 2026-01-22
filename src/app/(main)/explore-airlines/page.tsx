@@ -380,14 +380,14 @@ function ExploreAirlinesContent() {
                             Filter by Origin
                           </Label>
                           <Select
-                            value={originFilter}
-                            onValueChange={setOriginFilter}
+                            value={originFilter || 'all'}
+                            onValueChange={(v) => setOriginFilter(v === 'all' ? '' : v)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Any origin" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Any origin</SelectItem>
+                              <SelectItem value="all">Any origin</SelectItem>
                               {uniqueOrigins.map((origin) => {
                                 const airport = getAirportByCode(origin);
                                 const routeCount = data.routes.filter(
@@ -409,14 +409,14 @@ function ExploreAirlinesContent() {
                             Filter by Destination
                           </Label>
                           <Select
-                            value={destinationFilter}
-                            onValueChange={setDestinationFilter}
+                            value={destinationFilter || 'all'}
+                            onValueChange={(v) => setDestinationFilter(v === 'all' ? '' : v)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Any destination" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Any destination</SelectItem>
+                              <SelectItem value="all">Any destination</SelectItem>
                               {uniqueDestinations.map((dest) => {
                                 const airport = getAirportByCode(dest);
                                 const routeCount = data.routes.filter(
