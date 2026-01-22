@@ -14,6 +14,7 @@ import {
   LogOut,
   Settings,
   Wallet,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,7 @@ import { useUserStore } from '@/stores/user-store';
 
 const navLinks = [
   { href: '/search', label: 'Search', icon: Search },
+  { href: '/explore-airlines', label: 'By Airline', icon: Globe },
   { href: '/sweet-spots', label: 'Sweet Spots', icon: Sparkles },
 ];
 
