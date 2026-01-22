@@ -106,13 +106,10 @@ export async function GET(request: NextRequest) {
       cabin || undefined
     );
 
-    // Further filter to only include flights where the specified airline is operating
-    // (in case a route has multiple airlines and we only want our target airline)
-    const airlineFlights = flights.filter((flight) => {
-      // The airline field is set from the first airline code in the list
-      // This is a simplification - ideally we'd check if our airline is in the operating airlines
-      return true; // Keep all for now since we already filtered above
-    });
+    // Filter to only include flights with available seats (seats > 0)
+    const airlineFlights = flights.filter((flight) => flight.seatsAvailable > 0);
+
+    console.log(`[flights/airline] After seat filter: ${airlineFlights.length} flights with availability`);
 
     // Sort by date, then by points
     const sortedFlights = airlineFlights.sort((a, b) => {

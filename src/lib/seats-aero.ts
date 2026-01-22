@@ -515,8 +515,8 @@ export function transformToAwardFlights(
     const airlines = availability[`${cabin.code}Airlines` as keyof SeatsAeroAvailability] as string;
     const isDirect = availability[`${cabin.code}Direct` as keyof SeatsAeroAvailability] as boolean;
 
-    // Skip if not available or no mileage cost
-    if (!available || mileageCost <= 0) continue;
+    // Skip if not available, no mileage cost, or no seats
+    if (!available || mileageCost <= 0 || seats <= 0) continue;
 
     const cashPrice = estimateCashPrice(route.Distance, cabin.class);
     const valueCpp = calculateCpp(cashPrice, mileageCost);
