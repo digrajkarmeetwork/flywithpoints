@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -10,8 +10,12 @@ import {
   MapPin,
   Calendar,
   ArrowRight,
-  Filter,
   SlidersHorizontal,
+  PlaneTakeoff,
+  PlaneLanding,
+  Navigation,
+  X,
+  Info,
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
@@ -20,6 +24,8 @@ import { FlightCard } from '@/components/search/flight-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -29,6 +35,7 @@ import {
 } from '@/components/ui/select';
 import { AwardFlight } from '@/types';
 import { cn } from '@/lib/utils';
+import { getAirportByCode } from '@/data/airports';
 
 interface RouteInfo {
   route: string;
@@ -69,9 +76,13 @@ function ExploreAirlinesContent() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AirlineSearchResponse | null>(null);
   const [displayedFlights, setDisplayedFlights] = useState<AwardFlight[]>([]);
-  const [selectedRoute, setSelectedRoute] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'date' | 'points' | 'value'>('date');
   const [showLimit, setShowLimit] = useState(20);
+
+  // Advanced filtering
+  const [originFilter, setOriginFilter] = useState<string>('');
+  const [destinationFilter, setDestinationFilter] = useState<string>('');
+  const [homeAirport, setHomeAirport] = useState<string>('');
 
   useEffect(() => {
     if (!airlineCode) return;
@@ -83,7 +94,7 @@ function ExploreAirlinesContent() {
       try {
         const params = new URLSearchParams({
           airline: airlineCode,
-          limit: '500', // Fetch more results for filtering
+          limit: '500',
         });
 
         if (cabinParam && cabinParam !== 'all') {
@@ -109,18 +120,38 @@ function ExploreAirlinesContent() {
     fetchData();
   }, [airlineCode, cabinParam]);
 
+  // Get unique origins and destinations for filter dropdowns
+  const { uniqueOrigins, uniqueDestinations } = useMemo(() => {
+    if (!data) return { uniqueOrigins: [], uniqueDestinations: [] };
+
+    const origins = new Set<string>();
+    const destinations = new Set<string>();
+
+    data.routes.forEach((route) => {
+      origins.add(route.origin);
+      destinations.add(route.destination);
+    });
+
+    return {
+      uniqueOrigins: Array.from(origins).sort(),
+      uniqueDestinations: Array.from(destinations).sort(),
+    };
+  }, [data]);
+
   // Filter and sort flights
   useEffect(() => {
     if (!data) return;
 
     let filtered = [...data.flights];
 
-    // Filter by route
-    if (selectedRoute !== 'all') {
-      const [origin, destination] = selectedRoute.split('-');
-      filtered = filtered.filter(
-        (f) => f.origin === origin && f.destination === destination
-      );
+    // Filter by origin
+    if (originFilter) {
+      filtered = filtered.filter((f) => f.origin === originFilter);
+    }
+
+    // Filter by destination
+    if (destinationFilter) {
+      filtered = filtered.filter((f) => f.destination === destinationFilter);
     }
 
     // Sort
@@ -138,10 +169,69 @@ function ExploreAirlinesContent() {
     });
 
     setDisplayedFlights(filtered);
-  }, [data, selectedRoute, sortBy]);
+    setShowLimit(20); // Reset pagination when filters change
+  }, [data, originFilter, destinationFilter, sortBy]);
+
+  // Group routes by destination (for positioning suggestions)
+  const routesByDestination = useMemo(() => {
+    if (!data) return new Map<string, RouteInfo[]>();
+
+    const grouped = new Map<string, RouteInfo[]>();
+    data.routes.forEach((route) => {
+      const existing = grouped.get(route.destination) || [];
+      existing.push(route);
+      grouped.set(route.destination, existing);
+    });
+
+    // Sort each group by count (most availability first)
+    grouped.forEach((routes, dest) => {
+      routes.sort((a, b) => b.count - a.count);
+    });
+
+    return grouped;
+  }, [data]);
+
+  // Get positioning suggestions when user sets home airport and destination
+  const positioningSuggestions = useMemo(() => {
+    if (!homeAirport || !destinationFilter || !data) return [];
+
+    // Check if there's direct availability from home airport
+    const directRoute = data.routes.find(
+      (r) => r.origin === homeAirport && r.destination === destinationFilter
+    );
+
+    // Get all routes to the destination
+    const routesToDest = routesByDestination.get(destinationFilter) || [];
+
+    // Find alternative origins (not home airport)
+    const alternatives = routesToDest
+      .filter((r) => r.origin !== homeAirport)
+      .map((route) => {
+        const originAirport = getAirportByCode(route.origin);
+        return {
+          ...route,
+          originCity: originAirport?.city || route.origin,
+          originCountry: originAirport?.country || '',
+        };
+      });
+
+    return {
+      hasDirectAvailability: !!directRoute,
+      directRoute,
+      alternatives: alternatives.slice(0, 10), // Top 10 alternatives
+    };
+  }, [homeAirport, destinationFilter, data, routesByDestination]);
 
   const visibleFlights = displayedFlights.slice(0, showLimit);
   const hasMore = displayedFlights.length > showLimit;
+
+  const clearFilters = () => {
+    setOriginFilter('');
+    setDestinationFilter('');
+    setHomeAirport('');
+  };
+
+  const hasActiveFilters = originFilter || destinationFilter;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -155,7 +245,7 @@ function ExploreAirlinesContent() {
               Explore by Airline
             </h1>
             <p className="text-lg text-slate-600">
-              Find all available award flights on your favorite airline, regardless of route or date.
+              Find all available award flights on your favorite airline, then filter by origin or destination.
             </p>
           </div>
 
@@ -262,65 +352,245 @@ function ExploreAirlinesContent() {
               {/* Results */}
               {!loading && !error && data && (
                 <>
-                  {/* Routes Overview */}
-                  {data.routes.length > 0 && (
-                    <Card className="mb-6 border-slate-200">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-blue-600" />
-                          Available Routes
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2">
+                  {/* Route Filters */}
+                  <Card className="mb-6 border-slate-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <SlidersHorizontal className="h-5 w-5 text-blue-600" />
+                        Filter Routes
+                        {hasActiveFilters && (
                           <Button
-                            variant={selectedRoute === 'all' ? 'default' : 'outline'}
+                            variant="ghost"
                             size="sm"
-                            onClick={() => setSelectedRoute('all')}
-                            className={cn(
-                              selectedRoute === 'all' && 'bg-blue-600 hover:bg-blue-700'
-                            )}
+                            onClick={clearFilters}
+                            className="ml-auto text-slate-500 hover:text-slate-700"
                           >
-                            All Routes ({data.totalFlights})
+                            <X className="h-4 w-4 mr-1" />
+                            Clear filters
                           </Button>
-                          {data.routes
-                            .sort((a, b) => b.count - a.count)
-                            .slice(0, 20)
-                            .map((route) => (
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Origin and Destination Filters */}
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
+                            <PlaneTakeoff className="h-4 w-4 text-slate-400" />
+                            Filter by Origin
+                          </Label>
+                          <Select
+                            value={originFilter}
+                            onValueChange={setOriginFilter}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Any origin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Any origin</SelectItem>
+                              {uniqueOrigins.map((origin) => {
+                                const airport = getAirportByCode(origin);
+                                const routeCount = data.routes.filter(
+                                  (r) => r.origin === origin
+                                ).length;
+                                return (
+                                  <SelectItem key={origin} value={origin}>
+                                    {origin} - {airport?.city || origin} ({routeCount} routes)
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
+                            <PlaneLanding className="h-4 w-4 text-slate-400" />
+                            Filter by Destination
+                          </Label>
+                          <Select
+                            value={destinationFilter}
+                            onValueChange={setDestinationFilter}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Any destination" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Any destination</SelectItem>
+                              {uniqueDestinations.map((dest) => {
+                                const airport = getAirportByCode(dest);
+                                const routeCount = data.routes.filter(
+                                  (r) => r.destination === dest
+                                ).length;
+                                return (
+                                  <SelectItem key={dest} value={dest}>
+                                    {dest} - {airport?.city || dest} ({routeCount} routes)
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Positioning Helper */}
+                      {destinationFilter && (
+                        <div className="pt-4 border-t border-slate-200">
+                          <Label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
+                            <Navigation className="h-4 w-4 text-slate-400" />
+                            Your Home Airport (for positioning suggestions)
+                          </Label>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="e.g., YYZ, JFK, LAX"
+                              value={homeAirport}
+                              onChange={(e) => setHomeAirport(e.target.value.toUpperCase())}
+                              className="max-w-[200px] uppercase"
+                              maxLength={3}
+                            />
+                            {homeAirport && (
                               <Button
-                                key={route.route}
-                                variant={selectedRoute === route.route ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setSelectedRoute(route.route)}
-                                className={cn(
-                                  'flex items-center gap-1',
-                                  selectedRoute === route.route && 'bg-blue-600 hover:bg-blue-700'
-                                )}
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setHomeAirport('')}
                               >
-                                {route.origin}
-                                <ArrowRight className="h-3 w-3" />
-                                {route.destination}
-                                <span className="ml-1 text-xs opacity-70">({route.count})</span>
+                                <X className="h-4 w-4" />
                               </Button>
-                            ))}
-                          {data.routes.length > 20 && (
-                            <Badge variant="outline" className="px-3 py-1">
-                              +{data.routes.length - 20} more routes
-                            </Badge>
+                            )}
+                          </div>
+
+                          {/* Positioning Suggestions */}
+                          {homeAirport && positioningSuggestions && (
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                              <div className="flex items-start gap-2 mb-3">
+                                <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                                <div>
+                                  <p className="font-medium text-blue-900">
+                                    Positioning to {destinationFilter} from {homeAirport}
+                                  </p>
+                                  {positioningSuggestions.hasDirectAvailability ? (
+                                    <p className="text-sm text-blue-700 mt-1">
+                                      Direct award availability exists from {homeAirport}!
+                                      ({positioningSuggestions.directRoute?.count} flights,{' '}
+                                      {positioningSuggestions.directRoute?.minPoints.toLocaleString()}-
+                                      {positioningSuggestions.directRoute?.maxPoints.toLocaleString()} points)
+                                    </p>
+                                  ) : (
+                                    <p className="text-sm text-blue-700 mt-1">
+                                      No direct availability from {homeAirport}. Consider positioning to one of these cities:
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {!positioningSuggestions.hasDirectAvailability &&
+                                positioningSuggestions.alternatives &&
+                                positioningSuggestions.alternatives.length > 0 && (
+                                  <div className="space-y-2">
+                                    {positioningSuggestions.alternatives.map((alt) => (
+                                      <button
+                                        key={alt.origin}
+                                        onClick={() => setOriginFilter(alt.origin)}
+                                        className={cn(
+                                          'w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors',
+                                          originFilter === alt.origin
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white hover:bg-blue-100'
+                                        )}
+                                      >
+                                        <div>
+                                          <span className="font-medium">
+                                            {alt.origin} - {alt.originCity}
+                                          </span>
+                                          {alt.originCountry && (
+                                            <span className={cn(
+                                              'text-sm ml-2',
+                                              originFilter === alt.origin ? 'text-blue-100' : 'text-slate-500'
+                                            )}>
+                                              ({alt.originCountry})
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className={cn(
+                                          'text-sm',
+                                          originFilter === alt.origin ? 'text-blue-100' : 'text-slate-600'
+                                        )}>
+                                          {alt.count} flights
+                                          <span className="mx-1">|</span>
+                                          {alt.minPoints.toLocaleString()}+ pts
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+
+                              {positioningSuggestions.hasDirectAvailability && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setOriginFilter(homeAirport)}
+                                  className="mt-2 bg-white"
+                                >
+                                  Show flights from {homeAirport}
+                                </Button>
+                              )}
+                            </div>
                           )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                      )}
 
-                  {/* Filters */}
+                      {/* Quick Route Buttons */}
+                      {!originFilter && !destinationFilter && data.routes.length > 0 && (
+                        <div className="pt-4 border-t border-slate-200">
+                          <p className="text-sm text-slate-500 mb-3">Popular routes:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {data.routes
+                              .sort((a, b) => b.count - a.count)
+                              .slice(0, 12)
+                              .map((route) => (
+                                <Button
+                                  key={route.route}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setOriginFilter(route.origin);
+                                    setDestinationFilter(route.destination);
+                                  }}
+                                  className="flex items-center gap-1"
+                                >
+                                  {route.origin}
+                                  <ArrowRight className="h-3 w-3" />
+                                  {route.destination}
+                                  <span className="ml-1 text-xs opacity-70">({route.count})</span>
+                                </Button>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Results Header */}
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-slate-600">
-                      Showing {Math.min(showLimit, displayedFlights.length)} of{' '}
-                      {displayedFlights.length} flights
-                    </p>
+                    <div>
+                      <p className="text-sm text-slate-600">
+                        Showing {Math.min(showLimit, displayedFlights.length)} of{' '}
+                        {displayedFlights.length} flights
+                        {hasActiveFilters && (
+                          <span className="text-blue-600 ml-1">
+                            (filtered from {data.totalFlights})
+                          </span>
+                        )}
+                      </p>
+                      {originFilter || destinationFilter ? (
+                        <p className="text-xs text-slate-400 mt-1">
+                          {originFilter && `From: ${originFilter}`}
+                          {originFilter && destinationFilter && ' | '}
+                          {destinationFilter && `To: ${destinationFilter}`}
+                        </p>
+                      ) : null}
+                    </div>
                     <div className="flex items-center gap-3">
-                      <SlidersHorizontal className="h-4 w-4 text-slate-400" />
                       <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                         <SelectTrigger className="w-[160px]">
                           <SelectValue placeholder="Sort by" />
@@ -358,11 +628,18 @@ function ExploreAirlinesContent() {
                       <CardContent className="p-12 text-center">
                         <Plane className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                         <p className="text-slate-600">
-                          No flights found for this route and cabin combination.
+                          No flights found for this filter combination.
                         </p>
                         <p className="text-sm text-slate-400 mt-2">
-                          Try selecting a different route or cabin class.
+                          Try adjusting your origin or destination filters.
                         </p>
+                        <Button
+                          variant="outline"
+                          onClick={clearFilters}
+                          className="mt-4"
+                        >
+                          Clear all filters
+                        </Button>
                       </CardContent>
                     </Card>
                   )}
@@ -399,12 +676,20 @@ function ExploreAirlinesContent() {
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
                   Explore Award Flights by Airline
                 </h3>
-                <p className="text-slate-600 max-w-md mx-auto mb-6">
+                <p className="text-slate-600 max-w-md mx-auto mb-4">
                   Want to fly Qatar Airways Qsuites? Singapore Suites? Emirates First?
-                  Select an airline above to see all available award flights on that
-                  carrier, regardless of route or date.
+                  Select an airline above to see all available award flights.
                 </p>
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="bg-slate-50 rounded-lg p-4 max-w-lg mx-auto text-left">
+                  <p className="text-sm font-medium text-slate-700 mb-2">How it works:</p>
+                  <ol className="text-sm text-slate-600 space-y-1 list-decimal list-inside">
+                    <li>Select an airline and cabin class</li>
+                    <li>See all available routes on that airline</li>
+                    <li>Filter by destination to find where you want to go</li>
+                    <li>Enter your home airport to see positioning options</li>
+                  </ol>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2 mt-6">
                   {['QR', 'SQ', 'EK', 'CX', 'JL', 'NH'].map((code) => (
                     <Badge key={code} variant="outline" className="text-sm">
                       {code}
