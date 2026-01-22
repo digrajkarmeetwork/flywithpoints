@@ -193,7 +193,7 @@ function ExploreAirlinesContent() {
 
   // Get positioning suggestions when user sets home airport and destination
   const positioningSuggestions = useMemo(() => {
-    if (!homeAirport || !destinationFilter || !data) return [];
+    if (!homeAirport || !destinationFilter || !data) return null;
 
     // Check if there's direct availability from home airport
     const directRoute = data.routes.find(
