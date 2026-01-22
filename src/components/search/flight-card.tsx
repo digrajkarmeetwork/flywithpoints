@@ -1,13 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plane, Clock, ArrowRight, Sparkles, ExternalLink, Calendar } from 'lucide-react';
+import { Plane, Clock, ArrowRight, Sparkles, ExternalLink, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AwardFlight } from '@/types';
 import { getAirportByCode } from '@/data/airports';
+import { useState } from 'react';
 
 interface FlightCardProps {
   flight: AwardFlight;
@@ -15,6 +16,9 @@ interface FlightCardProps {
 }
 
 export function FlightCard({ flight, index = 0 }: FlightCardProps) {
+  const [showSegments, setShowSegments] = useState(false);
+  const [showBookingLinks, setShowBookingLinks] = useState(false);
+
   const originAirport = getAirportByCode(flight.origin);
   const destAirport = getAirportByCode(flight.destination);
 
@@ -54,9 +58,11 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
     }
   };
 
-  // Check if we have specific flight times (from mock data) vs just availability (from seats.aero)
+  // Check if we have specific flight times
   const hasSpecificTimes = flight.departureTime && flight.arrivalTime && flight.departureTime.length > 0;
-  const isLiveData = flight.source === 'seats.aero';
+  const isLiveData = flight.isLiveData || flight.source === 'seats.aero';
+  const hasSegments = flight.segments && flight.segments.length > 1;
+  const hasMultipleBookingLinks = flight.bookingLinks && flight.bookingLinks.length > 1;
 
   return (
     <motion.div
@@ -77,16 +83,21 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 <div>
                   <p className="font-medium text-slate-900">{flight.airline}</p>
                   <p className="text-sm text-slate-500">
-                    {flight.flightNumber ? `${flight.flightNumber} • ` : ''}
-                    {flight.aircraft || (isLiveData ? 'Multiple flight options' : '')}
+                    {flight.flightNumber ? `${flight.flightNumber}` : ''}
+                    {flight.flightNumber && flight.aircraft ? ' • ' : ''}
+                    {flight.aircraft || ''}
                   </p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                  {isLiveData && (
+                  {flight.isLiveData ? (
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                      ✓ Live Data
+                    </Badge>
+                  ) : isLiveData ? (
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
                       Live
                     </Badge>
-                  )}
+                  ) : null}
                   <Badge variant="outline">
                     {formatCabinClass(flight.cabinClass)}
                   </Badge>
@@ -164,31 +175,65 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 </div>
               </div>
 
-              {/* Availability */}
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-                    flight.seatsAvailable <= 2
-                      ? 'bg-red-50 text-red-600'
-                      : flight.seatsAvailable <= 4
-                      ? 'bg-amber-50 text-amber-600'
-                      : 'bg-emerald-50 text-emerald-600'
-                  )}
-                >
+              {/* Availability and Flight Number */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {flight.seatsAvailable > 0 && (
                   <span
                     className={cn(
-                      'w-1.5 h-1.5 rounded-full',
+                      'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
                       flight.seatsAvailable <= 2
-                        ? 'bg-red-500'
+                        ? 'bg-red-50 text-red-600'
                         : flight.seatsAvailable <= 4
-                        ? 'bg-amber-500'
-                        : 'bg-emerald-500'
+                        ? 'bg-amber-50 text-amber-600'
+                        : 'bg-emerald-50 text-emerald-600'
                     )}
-                  />
-                  {flight.seatsAvailable} seat{flight.seatsAvailable !== 1 ? 's' : ''} available
-                </span>
+                  >
+                    <span
+                      className={cn(
+                        'w-1.5 h-1.5 rounded-full',
+                        flight.seatsAvailable <= 2
+                          ? 'bg-red-500'
+                          : flight.seatsAvailable <= 4
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
+                      )}
+                    />
+                    {flight.seatsAvailable} seat{flight.seatsAvailable !== 1 ? 's' : ''} available
+                  </span>
+                )}
+                {hasSegments && (
+                  <button
+                    onClick={() => setShowSegments(!showSegments)}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                  >
+                    {flight.segments!.length} segments
+                    {showSegments ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  </button>
+                )}
               </div>
+
+              {/* Expandable Segments */}
+              {hasSegments && showSegments && (
+                <div className="mt-3 pt-3 border-t border-slate-200 space-y-2">
+                  {flight.segments!.map((segment, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-sm">
+                      <span className="text-slate-400 w-4">{idx + 1}.</span>
+                      <span className="font-medium text-slate-700">{segment.flightNumber}</span>
+                      <span className="text-slate-500">
+                        {segment.origin} → {segment.destination}
+                      </span>
+                      {segment.departureTime && segment.arrivalTime && (
+                        <span className="text-slate-400 text-xs">
+                          {segment.departureTime} - {segment.arrivalTime}
+                        </span>
+                      )}
+                      {segment.aircraft && (
+                        <span className="text-slate-400 text-xs">({segment.aircraft})</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Points and Booking */}
@@ -220,11 +265,70 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 {flight.valueCpp.toFixed(1)}cpp • {getValueLabel(flight.valueCpp)}
               </div>
 
-              {/* Book Button */}
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                <span>View Details</span>
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
+              {/* Book Button(s) */}
+              {flight.bookingUrl ? (
+                <div className="space-y-2">
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => window.open(flight.bookingUrl, '_blank')}
+                  >
+                    <span>Book Now</span>
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </Button>
+                  {hasMultipleBookingLinks && (
+                    <button
+                      onClick={() => setShowBookingLinks(!showBookingLinks)}
+                      className="w-full text-xs text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1"
+                    >
+                      {showBookingLinks ? 'Hide' : 'Show'} alternative booking options
+                      {showBookingLinks ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </button>
+                  )}
+                  {showBookingLinks && hasMultipleBookingLinks && (
+                    <div className="space-y-1 pt-1">
+                      {flight.bookingLinks!
+                        .filter(link => !link.isPrimary)
+                        .map((link, idx) => (
+                          <Button
+                            key={idx}
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-xs"
+                            onClick={() => window.open(link.url, '_blank')}
+                          >
+                            {link.label}
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="group relative">
+                    <Button
+                      className="w-full bg-slate-300 hover:bg-slate-400 text-slate-600"
+                      disabled={false}
+                      onClick={() => {
+                        if (flight.program.awardBookingUrl) {
+                          window.open(flight.program.awardBookingUrl, '_blank');
+                        }
+                      }}
+                    >
+                      <span>Search on {flight.program.name.split(' ')[0]}</span>
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-0 right-0 mb-2 hidden group-hover:block z-10">
+                      <div className="bg-slate-800 text-white text-xs rounded-lg p-3 shadow-lg">
+                        <p className="font-medium mb-1">Direct booking coming soon!</p>
+                        <p className="text-slate-300">For now, search for this award flight directly on the airline's website.</p>
+                      </div>
+                      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-slate-800 rotate-45" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

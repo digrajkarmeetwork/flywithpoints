@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { CalendarIcon, ArrowRightLeft, Users, Search } from 'lucide-react';
+import { useRouter, useSearchParams as useNextSearchParams } from 'next/navigation';
+import { format, addDays } from 'date-fns';
+import { CalendarIcon, ArrowRightLeft, Users, Search, CalendarRange } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -29,14 +29,20 @@ interface SearchFormProps {
   onSearch?: () => void;
 }
 
+type FlexibleRange = '1' | '3' | '7' | '14' | '30';
+
 export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
   const router = useRouter();
+  const urlSearchParams = useNextSearchParams();
   const { searchParams, setSearchParams } = useSearchStore();
   const [departureDate, setDepartureDate] = useState<Date | undefined>(
     searchParams.departureDate ? new Date(searchParams.departureDate) : undefined
   );
   const [returnDate, setReturnDate] = useState<Date | undefined>(
     searchParams.returnDate ? new Date(searchParams.returnDate) : undefined
+  );
+  const [flexibleRange, setFlexibleRange] = useState<FlexibleRange>(
+    (urlSearchParams.get('flex') as FlexibleRange) || '7'
   );
 
   const swapAirports = () => {
@@ -63,6 +69,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
       date: format(departureDate, 'yyyy-MM-dd'),
       cabin: searchParams.cabinClass,
       passengers: searchParams.passengers.toString(),
+      flex: flexibleRange,
     });
 
     if (returnDate) {
@@ -86,8 +93,8 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
         className={cn(
           'grid gap-4',
           isHero
-            ? 'md:grid-cols-[1fr,auto,1fr] lg:grid-cols-[1fr,auto,1fr,1fr,1fr,auto,auto]'
-            : 'md:grid-cols-[1fr,auto,1fr,1fr,auto]'
+            ? 'md:grid-cols-[1fr,auto,1fr] lg:grid-cols-[1fr,auto,1fr,1fr,auto,1fr,auto,auto]'
+            : 'md:grid-cols-[1fr,auto,1fr,1fr,auto,1fr,auto]'
         )}
       >
         {/* Origin */}
@@ -152,6 +159,31 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
               />
             </PopoverContent>
           </Popover>
+        </div>
+
+        {/* Flexible Date Range */}
+        <div>
+          <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+            <span className="flex items-center gap-1">
+              <CalendarRange className="h-3.5 w-3.5" />
+              Flexibility
+            </span>
+          </Label>
+          <Select
+            value={flexibleRange}
+            onValueChange={(value) => setFlexibleRange(value as FlexibleRange)}
+          >
+            <SelectTrigger className="h-12 border-slate-200">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">Exact date</SelectItem>
+              <SelectItem value="3">± 3 days</SelectItem>
+              <SelectItem value="7">± 7 days</SelectItem>
+              <SelectItem value="14">± 2 weeks</SelectItem>
+              <SelectItem value="30">± 1 month</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Return Date (Hero only) */}

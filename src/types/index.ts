@@ -14,6 +14,7 @@ export interface LoyaltyProgram {
   baseValueCpp: number; // cents per point
   alliance?: 'oneworld' | 'skyteam' | 'star_alliance' | null;
   transferPartners: string[];
+  awardBookingUrl?: string; // Direct link to book awards with this program
 }
 
 export interface PointBalance {
@@ -32,6 +33,22 @@ export interface FlightSearch {
   cabinClass: 'economy' | 'premium_economy' | 'business' | 'first';
   passengers: number;
   isFlexible: boolean;
+}
+
+export interface FlightSegment {
+  flightNumber: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  aircraft?: string;
+  fareClass?: string;
+}
+
+export interface BookingLink {
+  label: string;
+  url: string;
+  isPrimary: boolean;
 }
 
 export interface AwardFlight {
@@ -55,6 +72,11 @@ export interface AwardFlight {
   valueCpp: number;
   source: string;
   bookingUrl?: string;
+  // Enhanced fields from Live Search
+  segments?: FlightSegment[];
+  taxCurrency?: string;
+  bookingLinks?: BookingLink[];
+  isLiveData?: boolean;
 }
 
 export interface SavedSearch {

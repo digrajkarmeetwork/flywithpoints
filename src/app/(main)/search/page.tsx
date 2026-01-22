@@ -50,6 +50,7 @@ function SearchContent() {
     isSearching,
     filters,
     setFilters,
+    results,
   } = useSearchStore();
   const { pointBalances } = useUserStore();
   const filteredResults = useFilteredResults();
@@ -64,6 +65,7 @@ function SearchContent() {
   const destination = searchParams.get('destination');
   const date = searchParams.get('date');
   const cabin = searchParams.get('cabin') || 'economy';
+  const flex = searchParams.get('flex') || '7'; // Default to 7 days flexibility
 
   const originAirport = origin ? getAirportByCode(origin) : null;
   const destAirport = destination ? getAirportByCode(destination) : null;
@@ -125,15 +127,31 @@ function SearchContent() {
         setErrorMessage(null);
 
         try {
-          // Calculate end date (7 days from start for flexible searching)
-          const startDate = new Date(date);
-          const endDate = new Date(startDate);
-          endDate.setDate(endDate.getDate() + 7);
+          // Calculate date range based on flexibility setting
+          const flexDays = parseInt(flex);
+          const baseDate = new Date(date);
+
+          // For flexibility, search from (date - flexDays) to (date + flexDays)
+          // But for "exact date" (flex=1), just search that one day
+          const startDate = new Date(baseDate);
+          const endDate = new Date(baseDate);
+
+          if (flexDays > 1) {
+            startDate.setDate(startDate.getDate() - Math.floor(flexDays / 2));
+            endDate.setDate(endDate.getDate() + Math.floor(flexDays / 2));
+          }
+
+          // Ensure start date is not in the past
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (startDate < today) {
+            startDate.setTime(today.getTime());
+          }
 
           const params = new URLSearchParams({
             origin,
             destination,
-            start_date: date,
+            start_date: startDate.toISOString().split('T')[0],
             end_date: endDate.toISOString().split('T')[0],
             cabin,
           });
@@ -161,7 +179,7 @@ function SearchContent() {
 
       fetchResults();
     }
-  }, [origin, destination, date, cabin, setSearchParams, setResults, setSearching]);
+  }, [origin, destination, date, cabin, flex, setSearchParams, setResults, setSearching]);
 
   // Fetch AI recommendations when results are loaded
   useEffect(() => {
@@ -200,6 +218,9 @@ function SearchContent() {
                     day: 'numeric',
                     year: 'numeric',
                   })}
+                  {flex !== '1' && (
+                    <span className="text-blue-600"> (± {flex} days)</span>
+                  )}
                   {' · '}
                   {cabin.replace('_', ' ').charAt(0).toUpperCase() +
                     cabin.replace('_', ' ').slice(1)}
@@ -323,6 +344,43 @@ function SearchContent() {
                   </CardContent>
                 </Card>
 
+                {/* Airlines Filter */}
+                {results.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium">Airlines</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+                      {[...new Set(results.map(f => f.airline))].sort().map((airline) => (
+                        <label
+                          key={airline}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filters.airlines.includes(airline)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFilters({
+                                  airlines: [...filters.airlines, airline],
+                                });
+                              } else {
+                                setFilters({
+                                  airlines: filters.airlines.filter(
+                                    (a) => a !== airline
+                                  ),
+                                });
+                              }
+                            }}
+                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-slate-700">{airline}</span>
+                        </label>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* AI Recommendations Card */}
                 <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
                   <CardContent className="p-4">
@@ -385,7 +443,11 @@ function SearchContent() {
                       )}
                     </div>
                     {filteredResults.map((flight, index) => (
-                      <FlightCard key={flight.id} flight={flight} index={index} />
+                      <FlightCard
+                        key={flight.id}
+                        flight={flight}
+                        index={index}
+                      />
                     ))}
                   </>
                 ) : (
@@ -402,7 +464,7 @@ function SearchContent() {
                       )}
                     </p>
                     {dataSource !== 'error' && (
-                      <Button variant="outline" onClick={() => setFilters({ programs: [], maxStops: null })}>
+                      <Button variant="outline" onClick={() => setFilters({ programs: [], airlines: [], maxStops: null })}>
                         Clear Filters
                       </Button>
                     )}

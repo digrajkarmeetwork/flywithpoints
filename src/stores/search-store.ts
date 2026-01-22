@@ -13,6 +13,7 @@ interface SearchState {
   // Filters
   filters: {
     programs: string[];
+    airlines: string[];
     maxPoints: number | null;
     maxStops: number | null;
     sortBy: 'points' | 'value' | 'departure' | 'duration';
@@ -41,6 +42,7 @@ const defaultSearchParams: FlightSearch = {
 
 const defaultFilters: SearchState['filters'] = {
   programs: [],
+  airlines: [],
   maxPoints: null,
   maxStops: null,
   sortBy: 'points',
@@ -94,6 +96,11 @@ export const useFilteredResults = () => {
     filtered = filtered.filter((f) => filters.programs.includes(f.programId));
   }
 
+  // Filter by airlines
+  if (filters.airlines.length > 0) {
+    filtered = filtered.filter((f) => filters.airlines.includes(f.airline));
+  }
+
   // Filter by max points
   if (filters.maxPoints !== null) {
     filtered = filtered.filter((f) => f.pointsRequired <= filters.maxPoints!);
@@ -112,13 +119,21 @@ export const useFilteredResults = () => {
         comparison = a.pointsRequired - b.pointsRequired;
         break;
       case 'value':
-        comparison = b.valueCpp - a.valueCpp;
+        // Higher cpp = better value, so sort descending naturally
+        comparison = a.valueCpp - b.valueCpp;
         break;
       case 'departure':
         comparison = a.departureTime.localeCompare(b.departureTime);
         break;
       case 'duration':
-        comparison = a.duration.localeCompare(b.duration);
+        // Parse duration strings like "5h 30m" to minutes for proper numeric sorting
+        const parseDuration = (d: string): number => {
+          if (!d) return 999999; // Put unknown durations last
+          const hours = d.match(/(\d+)h/)?.[1] || '0';
+          const mins = d.match(/(\d+)m/)?.[1] || '0';
+          return parseInt(hours) * 60 + parseInt(mins);
+        };
+        comparison = parseDuration(a.duration) - parseDuration(b.duration);
         break;
     }
     return filters.sortOrder === 'asc' ? comparison : -comparison;
