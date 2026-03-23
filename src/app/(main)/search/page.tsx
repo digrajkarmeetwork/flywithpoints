@@ -20,10 +20,12 @@ import { SearchForm } from '@/components/search/search-form';
 import { FlightCard } from '@/components/search/flight-card';
 import { useSearchStore, useFilteredResults } from '@/stores/search-store';
 import { useUserStore } from '@/stores/user-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 import { getAirlinePrograms, getProgramById } from '@/data/loyalty-programs';
 import { getAirportByCode } from '@/data/airports';
 import { cn } from '@/lib/utils';
 import { AwardFlight } from '@/types';
+import { UpgradePrompt } from '@/components/premium/upgrade-prompt';
 
 interface AIRecommendation {
   title: string;
@@ -53,7 +55,11 @@ function SearchContent() {
     results,
   } = useSearchStore();
   const { pointBalances } = useUserStore();
-  const filteredResults = useFilteredResults();
+  const { isPremium } = useSubscriptionStore();
+  const allFilteredResults = useFilteredResults();
+  const FREE_LIMIT = 3;
+  const filteredResults = isPremium ? allFilteredResults : allFilteredResults.slice(0, FREE_LIMIT);
+  const hasMoreResults = !isPremium && allFilteredResults.length > FREE_LIMIT;
   const [showFilters, setShowFilters] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -181,12 +187,12 @@ function SearchContent() {
     }
   }, [origin, destination, date, cabin, flex, setSearchParams, setResults, setSearching]);
 
-  // Fetch AI recommendations when results are loaded
+  // Fetch AI recommendations when results are loaded (premium only)
   useEffect(() => {
-    if (filteredResults.length > 0 && !isSearching) {
+    if (isPremium && filteredResults.length > 0 && !isSearching) {
       fetchAIRecommendations();
     }
-  }, [filteredResults.length, isSearching, origin, destination]);
+  }, [isPremium, filteredResults.length, isSearching, origin, destination]);
 
   const airlinePrograms = getAirlinePrograms();
 
@@ -388,7 +394,14 @@ function SearchContent() {
                       <Sparkles className="h-5 w-5 text-blue-600" />
                       <span className="font-medium text-slate-900">AI Recommendations</span>
                     </div>
-                    {isLoadingAI ? (
+                    {!isPremium ? (
+                      <div className="text-sm text-slate-600">
+                        <p className="mb-2">Get personalized AI-powered recommendations for your route.</p>
+                        <a href="/pricing" className="text-blue-600 hover:underline font-medium text-xs">
+                          Upgrade to Premium to unlock
+                        </a>
+                      </div>
+                    ) : isLoadingAI ? (
                       <div className="flex items-center gap-2 text-sm text-slate-500">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Analyzing routes...
@@ -449,6 +462,14 @@ function SearchContent() {
                         index={index}
                       />
                     ))}
+                    {hasMoreResults && (
+                      <UpgradePrompt
+                        feature="Unlimited Search Results"
+                        description="You're seeing 3 of the available results. Upgrade to Premium for unlimited results, AI recommendations, and email alerts."
+                        totalResults={allFilteredResults.length}
+                        shownResults={FREE_LIMIT}
+                      />
+                    )}
                   </>
                 ) : (
                   <Card className="p-12 text-center">

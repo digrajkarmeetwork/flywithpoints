@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -17,6 +18,7 @@ import {
   Trash2,
   Settings,
   Loader2,
+  Crown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,6 +45,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { ExploreOpportunitiesSection } from '@/components/explore/explore-opportunities';
 import { useUserStore } from '@/stores/user-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 import { loyaltyPrograms, getProgramById } from '@/data/loyalty-programs';
 import { getTopSweetSpots } from '@/data/sweet-spots';
 import { cn } from '@/lib/utils';
@@ -58,6 +61,8 @@ interface AIRecommendation {
 export default function DashboardPage() {
   const { user, pointBalances, setPointBalances, addPointBalance, updatePointBalance, removePointBalance } =
     useUserStore();
+  const { isPremium, plan, openPortal, fetchSubscription } = useSubscriptionStore();
+  const searchParams = useSearchParams();
   const [isAddingProgram, setIsAddingProgram] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState('');
   const [balanceAmount, setBalanceAmount] = useState('');
@@ -69,6 +74,14 @@ export default function DashboardPage() {
   const supabase = createClient();
 
   const topSweetSpots = getTopSweetSpots(3);
+
+  // Handle subscription success redirect
+  useEffect(() => {
+    if (searchParams.get('subscription') === 'success') {
+      fetchSubscription();
+      toast.success('Welcome to Premium! All features are now unlocked.');
+    }
+  }, [searchParams, fetchSubscription]);
 
   // Load point balances from Supabase on mount
   useEffect(() => {
@@ -151,12 +164,12 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch AI recommendations when point balances change
+  // Fetch AI recommendations when point balances change (premium only)
   useEffect(() => {
-    if (!isLoading && pointBalances.length > 0) {
+    if (isPremium && !isLoading && pointBalances.length > 0) {
       fetchAIRecommendations();
     }
-  }, [pointBalances.length, isLoading]);
+  }, [isPremium, pointBalances.length, isLoading]);
 
   const handleAddProgram = async () => {
     if (!selectedProgram || !balanceAmount || !user?.id) return;
@@ -580,6 +593,40 @@ export default function DashboardPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Subscription Status */}
+              <Card className={isPremium ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200' : ''}>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Crown className={cn('h-5 w-5', isPremium ? 'text-blue-600' : 'text-slate-400')} />
+                    <div>
+                      <p className="font-medium text-slate-900">
+                        {isPremium ? 'Premium Plan' : 'Free Plan'}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {isPremium ? 'All features unlocked' : 'Limited search results'}
+                      </p>
+                    </div>
+                  </div>
+                  {isPremium ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => openPortal()}
+                    >
+                      Manage Subscription
+                    </Button>
+                  ) : (
+                    <Link href="/pricing">
+                      <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                        <Crown className="h-4 w-4 mr-2" />
+                        Upgrade to Premium
+                      </Button>
+                    </Link>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* AI Recommendations */}
               <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
                 <CardHeader>
@@ -589,7 +636,14 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingAI ? (
+                  {!isPremium ? (
+                    <div className="text-sm text-slate-600">
+                      <p className="mb-2">Get personalized AI-powered portfolio optimization.</p>
+                      <Link href="/pricing" className="text-blue-600 hover:underline font-medium text-xs">
+                        Upgrade to Premium to unlock
+                      </Link>
+                    </div>
+                  ) : isLoadingAI ? (
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Analyzing your portfolio...

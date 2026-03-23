@@ -282,6 +282,37 @@ INSERT INTO loyalty_programs (id, name, type, base_value_cpp, alliance, transfer
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
+-- SUBSCRIPTIONS TABLE
+-- Stripe subscription tracking
+-- =====================================================
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE UNIQUE,
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
+  status TEXT NOT NULL DEFAULT 'free' CHECK (status IN ('free', 'active', 'trialing', 'past_due', 'canceled', 'incomplete')),
+  plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'premium')),
+  current_period_start TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- Users can read their own subscription
+CREATE POLICY "Users can view their own subscription"
+  ON subscriptions FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Service role can manage subscriptions (webhooks)
+CREATE POLICY "Service role can manage subscriptions"
+  ON subscriptions FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+-- =====================================================
 -- INDEXES
 -- =====================================================
 CREATE INDEX idx_point_balances_user_id ON point_balances(user_id);

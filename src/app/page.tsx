@@ -55,7 +55,7 @@ const stats = [
   { value: '15+', label: 'Airline Programs' },
   { value: '5', label: 'Credit Card Partners' },
   { value: '50+', label: 'Sweet Spots' },
-  { value: '100%', label: 'Free to Use' },
+  { value: '$9.99', label: 'Premium /month' },
 ];
 
 export default function HomePage() {

@@ -34,6 +34,7 @@ const navLinks = [
   { href: '/search', label: 'Search', icon: Search },
   { href: '/explore-airlines', label: 'By Airline', icon: Globe },
   { href: '/sweet-spots', label: 'Sweet Spots', icon: Sparkles },
+  { href: '/pricing', label: 'Pricing', icon: Wallet },
 ];
 
 export function Navbar() {
