@@ -260,7 +260,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="pt-20 pb-16">
@@ -268,8 +268,8 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-              <p className="text-slate-500">
+              <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground">
                 Welcome back{user?.displayName ? `, ${user.displayName}` : ''}
               </p>
             </div>
@@ -286,12 +286,12 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-blue-100">
-                    <Wallet className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 rounded-lg bg-primary/15">
+                    <Wallet className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Total Points</p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-sm text-muted-foreground">Total Points</p>
+                    <p className="text-2xl font-bold text-foreground">
                       {pointBalances
                         .reduce((sum, b) => sum + b.balance, 0)
                         .toLocaleString()}
@@ -304,12 +304,12 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-emerald-100">
-                    <TrendingUp className="h-6 w-6 text-emerald-600" />
+                  <div className="p-3 rounded-lg bg-chart-2/15">
+                    <TrendingUp className="h-6 w-6 text-chart-2" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Estimated Value</p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-sm text-muted-foreground">Estimated Value</p>
+                    <p className="text-2xl font-bold text-foreground">
                       ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
@@ -320,12 +320,12 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-purple-100">
-                    <CreditCard className="h-6 w-6 text-purple-600" />
+                  <div className="p-3 rounded-lg bg-chart-4/15">
+                    <CreditCard className="h-6 w-6 text-chart-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Programs</p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-sm text-muted-foreground">Programs</p>
+                    <p className="text-2xl font-bold text-foreground">
                       {pointBalances.length}
                     </p>
                   </div>
@@ -336,12 +336,12 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-orange-100">
-                    <Bell className="h-6 w-6 text-orange-600" />
+                  <div className="p-3 rounded-lg bg-chart-5/15">
+                    <Bell className="h-6 w-6 text-chart-5" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Active Alerts</p>
-                    <p className="text-2xl font-bold text-slate-900">0</p>
+                    <p className="text-sm text-muted-foreground">Active Alerts</p>
+                    <p className="text-2xl font-bold text-foreground">0</p>
                   </div>
                 </div>
               </CardContent>
@@ -364,7 +364,7 @@ export default function DashboardPage() {
                   </div>
                   <Dialog open={isAddingProgram} onOpenChange={setIsAddingProgram}>
                     <DialogTrigger asChild>
-                      <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Button className="bg-primary hover:bg-primary/90">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Program
                       </Button>
@@ -422,7 +422,7 @@ export default function DashboardPage() {
                         <Button
                           onClick={handleAddProgram}
                           disabled={!selectedProgram || !balanceAmount || isSaving}
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-primary hover:bg-primary/90"
                         >
                           {isSaving ? (
                             <>
@@ -440,7 +440,7 @@ export default function DashboardPage() {
                 <CardContent>
                   {isLoading ? (
                     <div className="flex items-center justify-center py-12">
-                      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                   ) : pointBalances.length > 0 ? (
                     <div className="space-y-3">
@@ -454,28 +454,28 @@ export default function DashboardPage() {
                             key={balance.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+                            className="flex items-center justify-between p-4 bg-background rounded-lg"
                           >
                             <div className="flex items-center gap-4">
                               <div
                                 className={cn(
                                   'p-2 rounded-lg',
                                   program.type === 'credit_card'
-                                    ? 'bg-purple-100'
-                                    : 'bg-blue-100'
+                                    ? 'bg-chart-4/15'
+                                    : 'bg-primary/15'
                                 )}
                               >
                                 {program.type === 'credit_card' ? (
-                                  <CreditCard className="h-5 w-5 text-purple-600" />
+                                  <CreditCard className="h-5 w-5 text-chart-4" />
                                 ) : (
-                                  <Plane className="h-5 w-5 text-blue-600" />
+                                  <Plane className="h-5 w-5 text-primary" />
                                 )}
                               </div>
                               <div>
-                                <p className="font-medium text-slate-900">
+                                <p className="font-medium text-foreground">
                                   {program.name}
                                 </p>
-                                <p className="text-sm text-slate-500">
+                                <p className="text-sm text-muted-foreground">
                                   {program.baseValueCpp} cpp avg value
                                 </p>
                               </div>
@@ -502,10 +502,10 @@ export default function DashboardPage() {
                                 />
                               ) : (
                                 <div className="text-right">
-                                  <p className="font-bold text-slate-900">
+                                  <p className="font-bold text-foreground">
                                     {balance.balance.toLocaleString()}
                                   </p>
-                                  <p className="text-sm text-emerald-600">
+                                  <p className="text-sm text-chart-2">
                                     ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })} value
                                   </p>
                                 </div>
@@ -517,14 +517,14 @@ export default function DashboardPage() {
                                   size="icon"
                                   onClick={() => setEditingProgram(balance.programId)}
                                 >
-                                  <Edit2 className="h-4 w-4 text-slate-400" />
+                                  <Edit2 className="h-4 w-4 text-muted-foreground/70" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleRemoveProgram(balance.programId)}
                                 >
-                                  <Trash2 className="h-4 w-4 text-slate-400" />
+                                  <Trash2 className="h-4 w-4 text-muted-foreground/70" />
                                 </Button>
                               </div>
                             </div>
@@ -534,16 +534,16 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <Wallet className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-slate-900 mb-2">
+                      <Wallet className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">
                         No programs added yet
                       </h3>
-                      <p className="text-slate-500 mb-4">
+                      <p className="text-muted-foreground mb-4">
                         Add your loyalty programs to track your points balance.
                       </p>
                       <Button
                         onClick={() => setIsAddingProgram(true)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Add Your First Program
@@ -558,16 +558,16 @@ export default function DashboardPage() {
                 <Link href="/search">
                   <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                     <CardContent className="p-6 flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-blue-100">
-                        <Search className="h-6 w-6 text-blue-600" />
+                      <div className="p-3 rounded-lg bg-primary/15">
+                        <Search className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900">Search Flights</h3>
-                        <p className="text-sm text-slate-500">
+                        <h3 className="font-semibold text-foreground">Search Flights</h3>
+                        <p className="text-sm text-muted-foreground">
                           Find award availability
                         </p>
                       </div>
-                      <ArrowRight className="h-5 w-5 text-slate-400 ml-auto" />
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/70 ml-auto" />
                     </CardContent>
                   </Card>
                 </Link>
@@ -575,16 +575,16 @@ export default function DashboardPage() {
                 <Link href="/sweet-spots">
                   <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                     <CardContent className="p-6 flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-emerald-100">
-                        <Sparkles className="h-6 w-6 text-emerald-600" />
+                      <div className="p-3 rounded-lg bg-chart-2/15">
+                        <Sparkles className="h-6 w-6 text-chart-2" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900">Sweet Spots</h3>
-                        <p className="text-sm text-slate-500">
+                        <h3 className="font-semibold text-foreground">Sweet Spots</h3>
+                        <p className="text-sm text-muted-foreground">
                           Best redemption opportunities
                         </p>
                       </div>
-                      <ArrowRight className="h-5 w-5 text-slate-400 ml-auto" />
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/70 ml-auto" />
                     </CardContent>
                   </Card>
                 </Link>
@@ -594,15 +594,15 @@ export default function DashboardPage() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Subscription Status */}
-              <Card className={isPremium ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200' : ''}>
+              <Card className={isPremium ? 'bg-gradient-to-br from-primary/10 to-chart-4/10 border-primary/20' : ''}>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <Crown className={cn('h-5 w-5', isPremium ? 'text-blue-600' : 'text-slate-400')} />
+                    <Crown className={cn('h-5 w-5', isPremium ? 'text-primary' : 'text-muted-foreground/70')} />
                     <div>
-                      <p className="font-medium text-slate-900">
+                      <p className="font-medium text-foreground">
                         {isPremium ? 'Premium Plan' : 'Free Plan'}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-muted-foreground">
                         {isPremium ? 'All features unlocked' : 'Limited search results'}
                       </p>
                     </div>
@@ -618,7 +618,7 @@ export default function DashboardPage() {
                     </Button>
                   ) : (
                     <Link href="/pricing">
-                      <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
                         <Crown className="h-4 w-4 mr-2" />
                         Upgrade to Premium
                       </Button>
@@ -628,41 +628,41 @@ export default function DashboardPage() {
               </Card>
 
               {/* AI Recommendations */}
-              <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
+              <Card className="bg-gradient-to-br from-primary/10 to-chart-2/10 border-primary/20">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-blue-600" />
+                    <Sparkles className="h-5 w-5 text-primary" />
                     <CardTitle className="text-base">AI Recommendations</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {!isPremium ? (
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-muted-foreground">
                       <p className="mb-2">Get personalized AI-powered portfolio optimization.</p>
-                      <Link href="/pricing" className="text-blue-600 hover:underline font-medium text-xs">
+                      <Link href="/pricing" className="text-primary hover:underline font-medium text-xs">
                         Upgrade to Premium to unlock
                       </Link>
                     </div>
                   ) : isLoadingAI ? (
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Analyzing your portfolio...
                     </div>
                   ) : pointBalances.length > 0 && aiRecommendations.length > 0 ? (
                     <div className="space-y-3">
                       {aiRecommendations.map((rec, index) => (
-                        <div key={index} className="border-b border-blue-100 last:border-0 pb-3 last:pb-0">
-                          <p className="text-sm font-medium text-slate-800">{rec.title}</p>
-                          <p className="text-xs text-slate-600 mt-1">{rec.description}</p>
+                        <div key={index} className="border-b border-primary/20 last:border-0 pb-3 last:pb-0">
+                          <p className="text-sm font-medium text-foreground">{rec.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{rec.description}</p>
                         </div>
                       ))}
                     </div>
                   ) : pointBalances.length > 0 ? (
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                       Unable to load recommendations. Try refreshing the page.
                     </p>
                   ) : (
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                       Add your loyalty programs to get personalized AI recommendations.
                     </p>
                   )}
@@ -679,25 +679,25 @@ export default function DashboardPage() {
                   {topSweetSpots.map((spot) => (
                     <div
                       key={spot.id}
-                      className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                     >
                       <div>
-                        <p className="font-medium text-sm text-slate-900">
+                        <p className="font-medium text-sm text-foreground">
                           {spot.title}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
                             variant="outline"
-                            className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200"
+                            className="text-xs bg-chart-2/10 text-chart-2 border-chart-2/30"
                           >
                             {spot.valueCpp.toFixed(1)} cpp
                           </Badge>
-                          <span className="text-xs text-slate-500 capitalize">
+                          <span className="text-xs text-muted-foreground capitalize">
                             {spot.cabinClass}
                           </span>
                         </div>
                       </div>
-                      <span className="text-sm font-medium text-slate-700">
+                      <span className="text-sm font-medium text-foreground/80">
                         {(spot.pointsRequired / 1000).toFixed(0)}k
                       </span>
                     </div>

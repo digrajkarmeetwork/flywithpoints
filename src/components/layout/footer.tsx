@@ -5,6 +5,7 @@ const footerLinks = {
   product: [
     { label: 'Search Flights', href: '/search' },
     { label: 'Sweet Spots', href: '/sweet-spots' },
+    { label: 'Pricing', href: '/pricing' },
     { label: 'Dashboard', href: '/dashboard' },
   ],
   legal: [
@@ -15,18 +16,18 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300">
+    <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <Plane className="h-8 w-8 text-blue-400 transform -rotate-45" />
-              <span className="text-xl font-bold text-white">
-                Fly<span className="text-blue-400">WithPoints</span>
+              <Plane className="h-8 w-8 text-primary transform -rotate-45" />
+              <span className="text-xl font-bold text-foreground">
+                Fly<span className="gradient-text">WithPoints</span>
               </span>
             </Link>
-            <p className="text-sm text-slate-400 max-w-xs mb-4">
+            <p className="text-sm text-muted-foreground max-w-xs mb-4">
               Find the best award flight redemptions and maximize your travel rewards with AI-powered recommendations.
             </p>
             <div className="flex gap-4">
@@ -34,7 +35,7 @@ export function Footer() {
                 href="https://github.com/digrajkarmeetwork/flywithpoints"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Github className="h-5 w-5" />
               </a>
@@ -42,7 +43,7 @@ export function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Twitter className="h-5 w-5" />
               </a>
@@ -51,13 +52,13 @@ export function Footer() {
 
           {/* Product Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Product</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Product</h3>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -68,13 +69,13 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Legal</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Legal</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -84,11 +85,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-slate-500">
+        <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} FlyWithPoints. All rights reserved.
           </p>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-muted-foreground/60">
             Not affiliated with any airline or loyalty program. Award availability and pricing subject to change.
           </p>
         </div>

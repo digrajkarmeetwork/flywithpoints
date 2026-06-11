@@ -56,19 +56,19 @@ function PricingContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <div className="container mx-auto max-w-5xl px-4 pt-28 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="mb-4 bg-blue-100 text-blue-700 border-blue-200">
+          <Badge className="mb-4 bg-primary/15 text-primary border-primary/30">
             Pricing
           </Badge>
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Unlock the Full Power of FlyWithPoints
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Start free and upgrade when you&apos;re ready to maximize your points and miles.
           </p>
         </div>
@@ -81,17 +81,17 @@ function PricingContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="h-full border-slate-200">
+            <Card className="h-full border-border">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="h-5 w-5 text-slate-600" />
+                  <Zap className="h-5 w-5 text-muted-foreground" />
                   <CardTitle className="text-xl">Free</CardTitle>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-slate-900">$0</span>
-                  <span className="text-slate-500">/month</span>
+                  <span className="text-4xl font-bold text-foreground">$0</span>
+                  <span className="text-muted-foreground">/month</span>
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Get started exploring award flights
                 </p>
               </CardHeader>
@@ -99,8 +99,8 @@ function PricingContent() {
                 <ul className="space-y-3">
                   {FREE_FEATURES.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-slate-700">{feature}</span>
+                      <Check className="h-5 w-5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground/80">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -121,20 +121,20 @@ function PricingContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="h-full border-blue-200 bg-gradient-to-b from-blue-50/50 to-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
+            <Card className="h-full border-primary/30 bg-gradient-to-b from-primary/5 to-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-primary text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
                 Most Popular
               </div>
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Crown className="h-5 w-5 text-blue-600" />
+                  <Crown className="h-5 w-5 text-primary" />
                   <CardTitle className="text-xl">Premium</CardTitle>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-slate-900">$9.99</span>
-                  <span className="text-slate-500">/month</span>
+                  <span className="text-4xl font-bold text-foreground">$9.99</span>
+                  <span className="text-muted-foreground">/month</span>
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Maximize every point in your wallet
                 </p>
               </CardHeader>
@@ -142,8 +142,8 @@ function PricingContent() {
                 <ul className="space-y-3">
                   {PREMIUM_FEATURES.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-slate-700">{feature}</span>
+                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground/80">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -154,13 +154,13 @@ function PricingContent() {
                     Loading...
                   </Button>
                 ) : isPremium ? (
-                  <Button className="w-full mt-8 bg-green-600 hover:bg-green-700" disabled>
+                  <Button className="w-full mt-8 bg-chart-2 hover:bg-chart-2/90" disabled>
                     <Check className="h-4 w-4 mr-2" />
                     Current Plan
                   </Button>
                 ) : (
                   <Button
-                    className="w-full mt-8 bg-blue-600 hover:bg-blue-700"
+                    className="w-full mt-8 bg-primary hover:bg-primary/90"
                     onClick={handleUpgrade}
                     disabled={isCheckingOut}
                   >
@@ -184,25 +184,25 @@ function PricingContent() {
 
         {/* FAQ */}
         <div className="mt-16 max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-slate-900 mb-8">
+          <h2 className="text-2xl font-bold text-center text-foreground mb-8">
             Frequently Asked Questions
           </h2>
           <div className="space-y-6">
             <div>
-              <h3 className="font-medium text-slate-900 mb-1">Can I cancel anytime?</h3>
-              <p className="text-sm text-slate-600">
+              <h3 className="font-medium text-foreground mb-1">Can I cancel anytime?</h3>
+              <p className="text-sm text-muted-foreground">
                 Yes, you can cancel your subscription at any time. You&apos;ll continue to have access until the end of your billing period.
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-slate-900 mb-1">What payment methods do you accept?</h3>
-              <p className="text-sm text-slate-600">
+              <h3 className="font-medium text-foreground mb-1">What payment methods do you accept?</h3>
+              <p className="text-sm text-muted-foreground">
                 We accept all major credit cards through our secure payment processor, Stripe.
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-slate-900 mb-1">How does the free plan limit work?</h3>
-              <p className="text-sm text-slate-600">
+              <h3 className="font-medium text-foreground mb-1">How does the free plan limit work?</h3>
+              <p className="text-sm text-muted-foreground">
                 Free users see up to 3 search results per query. Premium users get unlimited results with additional filters and AI recommendations.
               </p>
             </div>
@@ -219,8 +219,8 @@ export default function PricingPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
         </div>
       }
     >

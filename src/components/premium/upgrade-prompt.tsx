@@ -14,21 +14,21 @@ interface UpgradePromptProps {
 
 export function UpgradePrompt({ feature, description, totalResults, shownResults }: UpgradePromptProps) {
   return (
-    <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+    <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-chart-2/10 glow-blue">
       <CardContent className="p-6 text-center">
-        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <Crown className="h-6 w-6 text-blue-600" />
+        <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-3">
+          <Crown className="h-6 w-6 text-primary" />
         </div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-1">
+        <h3 className="text-lg font-semibold text-foreground mb-1">
           {totalResults && shownResults
             ? `Showing ${shownResults} of ${totalResults} results`
             : `Unlock ${feature}`}
         </h3>
-        <p className="text-sm text-slate-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           {description || `Upgrade to Premium to access ${feature.toLowerCase()} and more.`}
         </p>
         <Link href="/pricing">
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-primary hover:bg-primary/90 glow-blue">
             <Crown className="h-4 w-4 mr-2" />
             Upgrade to Premium — $9.99/mo
           </Button>
@@ -40,7 +40,7 @@ export function UpgradePrompt({ feature, description, totalResults, shownResults
 
 export function PremiumBadge() {
   return (
-    <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full hover:bg-blue-100 transition-colors">
+    <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full hover:bg-primary/15 transition-colors">
       <Crown className="h-3 w-3" />
       Premium
     </Link>
@@ -49,10 +49,10 @@ export function PremiumBadge() {
 
 export function PremiumLock({ feature }: { feature: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-slate-500">
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
       <Lock className="h-4 w-4" />
       <span>{feature} — </span>
-      <Link href="/pricing" className="text-blue-600 hover:underline font-medium">
+      <Link href="/pricing" className="text-primary hover:underline font-medium">
         Upgrade to unlock
       </Link>
     </div>

@@ -13,6 +13,7 @@ import {
   Zap,
   Globe,
   CreditCard,
+  Crown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,7 +36,7 @@ const features = [
     icon: TrendingUp,
     title: 'Real-Time Availability',
     description:
-      'Search award availability across multiple programs simultaneously with live data.',
+      'Search award availability across 23+ programs simultaneously with live data.',
   },
   {
     icon: Bell,
@@ -52,7 +53,7 @@ const features = [
 ];
 
 const stats = [
-  { value: '15+', label: 'Airline Programs' },
+  { value: '23+', label: 'Loyalty Programs' },
   { value: '5', label: 'Credit Card Partners' },
   { value: '50+', label: 'Sweet Spots' },
   { value: '$9.99', label: 'Premium /month' },
@@ -65,32 +66,35 @@ export default function HomePage() {
   const airlinePrograms = getAirlinePrograms().slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-slate-50 -z-10" />
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-100/50 to-transparent -z-10" />
+        {/* Background Effects */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-chart-2/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        </div>
 
         {/* Floating Elements */}
         <motion.div
-          className="absolute top-40 left-10 text-blue-200"
+          className="absolute top-40 left-10 text-primary/20"
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
           <Plane className="h-12 w-12 transform -rotate-45" />
         </motion.div>
         <motion.div
-          className="absolute top-60 right-20 text-orange-200"
+          className="absolute top-60 right-20 text-chart-5/20"
           animate={{ y: [0, 20, 0] }}
           transition={{ duration: 5, repeat: Infinity }}
         >
           <Star className="h-8 w-8" />
         </motion.div>
         <motion.div
-          className="absolute bottom-40 left-1/4 text-emerald-200"
+          className="absolute bottom-40 left-1/4 text-chart-2/20"
           animate={{ y: [0, -15, 0] }}
           transition={{ duration: 3.5, repeat: Infinity }}
         >
@@ -104,19 +108,19 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <Badge className="mb-4 bg-blue-100 text-blue-700 hover:bg-blue-100">
+            <Badge className="mb-4 bg-primary/15 text-primary border-primary/30 hover:bg-primary/20">
               <Zap className="h-3 w-3 mr-1" />
               AI-Powered Award Search
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
               Find the{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+              <span className="gradient-text">
                 Best Award Flights
               </span>
               <br />
               in Real Time
             </h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               Maximize your travel rewards with AI-powered recommendations for optimal points transfers and the highest-value redemptions.
             </p>
           </motion.div>
@@ -139,8 +143,8 @@ export default function HomePage() {
           >
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <p className="text-3xl font-bold text-blue-600">{stat.value}</p>
-                <p className="text-sm text-slate-500">{stat.label}</p>
+                <p className="text-3xl font-bold gradient-text">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </motion.div>
@@ -148,13 +152,13 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-slate-50">
+      <section className="py-20 px-4 border-t border-border/50">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Everything You Need to Maximize Points
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Powerful tools and insights to help you get the most value from your travel rewards.
             </p>
           </div>
@@ -170,15 +174,15 @@ export default function HomePage() {
                   transition={{ delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="h-full border-slate-200 hover:shadow-lg transition-shadow duration-300">
+                  <Card className="h-full border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 hover:glow-blue transition-all duration-300">
                     <CardContent className="p-6">
-                      <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
-                        <Icon className="h-6 w-6 text-blue-600" />
+                      <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4">
+                        <Icon className="h-6 w-6 text-primary" />
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
                         {feature.title}
                       </h3>
-                      <p className="text-slate-600 text-sm">{feature.description}</p>
+                      <p className="text-muted-foreground text-sm">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -189,19 +193,19 @@ export default function HomePage() {
       </section>
 
       {/* Sweet Spots Preview */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 border-t border-border/50">
         <div className="container mx-auto max-w-6xl">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                 Top Sweet Spots
               </h2>
-              <p className="text-lg text-slate-600">
+              <p className="text-lg text-muted-foreground">
                 Curated high-value redemption opportunities
               </p>
             </div>
             <Link href="/sweet-spots">
-              <Button variant="outline" className="hidden md:flex">
+              <Button variant="outline" className="hidden md:flex border-border hover:border-primary/50">
                 View All
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -217,33 +221,33 @@ export default function HomePage() {
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 border-slate-200">
-                  <div className="h-40 bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-                    <Plane className="h-16 w-16 text-white/30" />
+                <Card className="h-full overflow-hidden border-border/50 bg-card/50 hover:border-primary/30 transition-all duration-300">
+                  <div className="h-40 bg-gradient-to-br from-primary/30 to-chart-2/20 flex items-center justify-center">
+                    <Plane className="h-16 w-16 text-primary/20" />
                   </div>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge
                         variant="outline"
-                        className="bg-emerald-50 text-emerald-700 border-emerald-200"
+                        className="bg-chart-2/10 text-chart-2 border-chart-2/30"
                       >
                         {spot.valueCpp.toFixed(1)} cpp
                       </Badge>
-                      <Badge variant="outline" className="capitalize">
+                      <Badge variant="outline" className="capitalize border-border/50">
                         {spot.cabinClass}
                       </Badge>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {spot.title}
                     </h3>
-                    <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                       {spot.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-slate-900">
+                      <span className="text-2xl font-bold text-foreground">
                         {spot.pointsRequired.toLocaleString()}
                       </span>
-                      <span className="text-sm text-slate-500">points</span>
+                      <span className="text-sm text-muted-foreground">points</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -253,7 +257,7 @@ export default function HomePage() {
 
           <div className="mt-8 md:hidden text-center">
             <Link href="/sweet-spots">
-              <Button variant="outline">
+              <Button variant="outline" className="border-border">
                 View All Sweet Spots
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -263,32 +267,32 @@ export default function HomePage() {
       </section>
 
       {/* Programs Section */}
-      <section className="py-20 px-4 bg-slate-50">
+      <section className="py-20 px-4 border-t border-border/50">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Supported Programs
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Search across major airline loyalty programs and transfer partners
             </p>
           </div>
 
           <div className="mb-12">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
               Credit Card Transfer Partners
             </h3>
             <div className="flex flex-wrap gap-4">
               {creditCardPrograms.map((program) => (
                 <div
                   key={program.id}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-200"
+                  className="flex items-center gap-2 px-4 py-2 bg-card rounded-lg border border-border/50"
                 >
-                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
-                    <CreditCard className="h-4 w-4 text-slate-600" />
+                  <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                    <CreditCard className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-foreground">
                     {program.name}
                   </span>
                 </div>
@@ -297,37 +301,37 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <Plane className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Plane className="h-5 w-5 text-primary" />
               Airline Programs
             </h3>
             <div className="flex flex-wrap gap-4">
               {airlinePrograms.map((program) => (
                 <div
                   key={program.id}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-200"
+                  className="flex items-center gap-2 px-4 py-2 bg-card rounded-lg border border-border/50"
                 >
-                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
-                    <Plane className="h-4 w-4 text-slate-600" />
+                  <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                    <Plane className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-foreground">
                     {program.name}
                   </span>
                 </div>
               ))}
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
-                <span className="text-sm font-medium text-blue-700">+ More</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg border border-primary/30">
+                <span className="text-sm font-medium text-primary">+ More</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section - Only show for non-logged-in users */}
+      {/* CTA Section */}
       {!user && (
-        <section className="py-20 px-4">
+        <section className="py-20 px-4 border-t border-border/50">
           <div className="container mx-auto max-w-4xl">
-            <Card className="bg-gradient-to-r from-blue-600 to-cyan-500 border-0 text-white overflow-hidden relative">
+            <Card className="bg-gradient-to-r from-primary/20 to-chart-2/10 border-primary/30 overflow-hidden relative glow-blue">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10">
                   <Plane className="h-32 w-32 transform -rotate-45" />
@@ -337,29 +341,30 @@ export default function HomePage() {
                 </div>
               </div>
               <CardContent className="p-12 text-center relative z-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                <Crown className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                   Start Maximizing Your Points Today
                 </h2>
-                <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
                   Create a free account to track your points, set up alerts, and get personalized AI recommendations.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/signup">
                     <Button
                       size="lg"
-                      className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto glow-blue"
                     >
                       Create Free Account
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </Link>
-                  <Link href="/search">
+                  <Link href="/pricing">
                     <Button
                       size="lg"
                       variant="outline"
-                      className="border-white text-white hover:bg-white/10 w-full sm:w-auto"
+                      className="border-border hover:border-primary/50 w-full sm:w-auto"
                     >
-                      Search Flights
+                      View Pricing
                     </Button>
                   </Link>
                 </div>

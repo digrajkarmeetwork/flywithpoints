@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Plane,
   Search,
@@ -15,6 +15,7 @@ import {
   Settings,
   Wallet,
   Globe,
+  Crown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,12 +30,13 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useUserStore } from '@/stores/user-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 
 const navLinks = [
   { href: '/search', label: 'Search', icon: Search },
   { href: '/explore-airlines', label: 'By Airline', icon: Globe },
   { href: '/sweet-spots', label: 'Sweet Spots', icon: Sparkles },
-  { href: '/pricing', label: 'Pricing', icon: Wallet },
+  { href: '/pricing', label: 'Pricing', icon: Crown },
 ];
 
 export function Navbar() {
@@ -42,6 +44,7 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, setUser, reset } = useUserStore();
+  const { isPremium } = useSubscriptionStore();
   const supabase = createClient();
 
   useEffect(() => {
@@ -99,7 +102,7 @@ export function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm'
+          ? 'glass border-b border-border/50 shadow-lg shadow-black/20'
           : 'bg-transparent'
       )}
     >
@@ -107,16 +110,16 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="relative">
-            <Plane className="h-8 w-8 text-blue-600 transform -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+            <Plane className="h-8 w-8 text-primary transform -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
             <motion.div
-              className="absolute -inset-1 bg-blue-100 rounded-full -z-10"
+              className="absolute -inset-1 bg-primary/20 rounded-full -z-10"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2 }}
             />
           </div>
-          <span className="text-xl font-bold text-slate-900">
-            Fly<span className="text-blue-600">WithPoints</span>
+          <span className="text-xl font-bold text-foreground">
+            Fly<span className="gradient-text">WithPoints</span>
           </span>
         </Link>
 
@@ -132,8 +135,8 @@ export function Navbar() {
                   className={cn(
                     'gap-2 transition-colors',
                     isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -149,17 +152,23 @@ export function Navbar() {
           {user ? (
             <>
               <Link href="/dashboard" className="hidden md:block">
-                <Button variant="ghost" className="gap-2">
+                <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
                   <Wallet className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
+              {isPremium && (
+                <span className="hidden md:inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  <Crown className="h-3 w-3" />
+                  Pro
+                </span>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-10 w-10 border border-border">
                       <AvatarImage src={user.avatarUrl} alt={user.displayName || user.email} />
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                      <AvatarFallback className="bg-primary/20 text-primary">
                         {(user.displayName || user.email).charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -168,7 +177,7 @@ export function Navbar() {
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
                     <p className="text-sm font-medium">{user.displayName || 'User'}</p>
-                    <p className="text-xs text-slate-500">{user.email}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -186,7 +195,7 @@ export function Navbar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleSignOut}
-                    className="cursor-pointer text-red-600 focus:text-red-600"
+                    className="cursor-pointer text-destructive focus:text-destructive"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
@@ -197,10 +206,10 @@ export function Navbar() {
           ) : (
             <>
               <Link href="/login" className="hidden md:block">
-                <Button variant="ghost">Sign In</Button>
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Sign In</Button>
               </Link>
               <Link href="/signup">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground glow-blue">
                   Get Started
                 </Button>
               </Link>
@@ -214,7 +223,7 @@ export function Navbar() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
+            <SheetContent side="right" className="w-72 bg-card border-border">
               <div className="flex flex-col gap-4 mt-8">
                 {navLinks.map((link) => {
                   const Icon = link.icon;

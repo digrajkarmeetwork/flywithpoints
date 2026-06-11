@@ -9,21 +9,21 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FlyWithPoints - Find the Best Award Flight Redemptions",
-  description: "Discover the best award flight deals in real-time. AI-powered recommendations for optimal points transfers and maximum travel value.",
-  keywords: ["award flights", "miles", "points", "travel rewards", "airline miles", "credit card points"],
+  title: "FlyWithPoints - AI-Powered Award Flight Search",
+  description: "Find the best award flights in real-time. AI-powered recommendations for optimal points transfers and maximum travel value across 23+ loyalty programs.",
+  keywords: ["award flights", "miles", "points", "travel rewards", "airline miles", "credit card points", "award search"],
   authors: [{ name: "FlyWithPoints" }],
   openGraph: {
-    title: "FlyWithPoints - Find the Best Award Flight Redemptions",
-    description: "Discover the best award flight deals in real-time. AI-powered recommendations for optimal points transfers.",
+    title: "FlyWithPoints - AI-Powered Award Flight Search",
+    description: "Find the best award flights in real-time. AI-powered search across 23+ loyalty programs.",
     type: "website",
     locale: "en_US",
     siteName: "FlyWithPoints",
   },
   twitter: {
     card: "summary_large_image",
-    title: "FlyWithPoints - Find the Best Award Flight Redemptions",
-    description: "Discover the best award flight deals in real-time.",
+    title: "FlyWithPoints - AI-Powered Award Flight Search",
+    description: "Find the best award flights in real-time.",
   },
 };
 
@@ -33,8 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <Providers>{children}</Providers>
       </body>
     </html>

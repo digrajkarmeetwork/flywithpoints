@@ -197,11 +197,11 @@ function SearchContent() {
   const airlinePrograms = getAirlinePrograms();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Search Header */}
-      <div className="bg-white border-b border-slate-200 pt-20">
+      <div className="bg-card/50 border-b border-border pt-20">
         <div className="container mx-auto max-w-6xl px-4 py-6">
           <SearchForm variant="compact" />
         </div>
@@ -214,10 +214,10 @@ function SearchContent() {
             {/* Route Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-foreground">
                   {originAirport?.city || origin} to {destAirport?.city || destination}
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-muted-foreground">
                   {new Date(date).toLocaleDateString('en-US', {
                     weekday: 'long',
                     month: 'long',
@@ -225,7 +225,7 @@ function SearchContent() {
                     year: 'numeric',
                   })}
                   {flex !== '1' && (
-                    <span className="text-blue-600"> (± {flex} days)</span>
+                    <span className="text-primary"> (± {flex} days)</span>
                   )}
                   {' · '}
                   {cabin.replace('_', ' ').charAt(0).toUpperCase() +
@@ -304,9 +304,9 @@ function SearchContent() {
                               });
                             }
                           }}
-                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-slate-300 text-primary focus:ring-blue-500"
                         />
-                        <span className="text-sm text-slate-700">{program.name}</span>
+                        <span className="text-sm text-foreground/80">{program.name}</span>
                       </label>
                     ))}
                   </CardContent>
@@ -332,9 +332,9 @@ function SearchContent() {
                           name="stops"
                           checked={filters.maxStops === option.value}
                           onChange={() => setFilters({ maxStops: option.value })}
-                          className="border-slate-300 text-blue-600 focus:ring-blue-500"
+                          className="border-slate-300 text-primary focus:ring-blue-500"
                         />
-                        <span className="text-sm text-slate-700">{option.label}</span>
+                        <span className="text-sm text-foreground/80">{option.label}</span>
                       </label>
                     ))}
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -343,9 +343,9 @@ function SearchContent() {
                         name="stops"
                         checked={filters.maxStops === null}
                         onChange={() => setFilters({ maxStops: null })}
-                        className="border-slate-300 text-blue-600 focus:ring-blue-500"
+                        className="border-slate-300 text-primary focus:ring-blue-500"
                       />
-                      <span className="text-sm text-slate-700">Any number of stops</span>
+                      <span className="text-sm text-foreground/80">Any number of stops</span>
                     </label>
                   </CardContent>
                 </Card>
@@ -378,9 +378,9 @@ function SearchContent() {
                                 });
                               }
                             }}
-                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-slate-300 text-primary focus:ring-blue-500"
                           />
-                          <span className="text-sm text-slate-700">{airline}</span>
+                          <span className="text-sm text-foreground/80">{airline}</span>
                         </label>
                       ))}
                     </CardContent>
@@ -388,35 +388,35 @@ function SearchContent() {
                 )}
 
                 {/* AI Recommendations Card */}
-                <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
+                <Card className="bg-gradient-to-br from-primary/10 to-chart-2/10 border-primary/20">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium text-slate-900">AI Recommendations</span>
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      <span className="font-medium text-foreground">AI Recommendations</span>
                     </div>
                     {!isPremium ? (
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-muted-foreground">
                         <p className="mb-2">Get personalized AI-powered recommendations for your route.</p>
-                        <a href="/pricing" className="text-blue-600 hover:underline font-medium text-xs">
+                        <a href="/pricing" className="text-primary hover:underline font-medium text-xs">
                           Upgrade to Premium to unlock
                         </a>
                       </div>
                     ) : isLoadingAI ? (
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Analyzing routes...
                       </div>
                     ) : aiRecommendations.length > 0 ? (
                       <div className="space-y-3">
                         {aiRecommendations.map((rec, index) => (
-                          <div key={index} className="border-b border-blue-100 last:border-0 pb-2 last:pb-0">
-                            <p className="text-sm font-medium text-slate-800">{rec.title}</p>
-                            <p className="text-xs text-slate-600 mt-1">{rec.description}</p>
+                          <div key={index} className="border-b border-primary/20 last:border-0 pb-2 last:pb-0">
+                            <p className="text-sm font-medium text-foreground">{rec.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{rec.description}</p>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-muted-foreground">
                         Search for flights to get personalized AI recommendations.
                       </p>
                     )}
@@ -428,8 +428,8 @@ function SearchContent() {
               <div className="flex-1 space-y-4">
                 {isSearching ? (
                   <div className="flex flex-col items-center justify-center py-20">
-                    <Loader2 className="h-10 w-10 text-blue-600 animate-spin mb-4" />
-                    <p className="text-slate-500">Searching for award availability...</p>
+                    <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+                    <p className="text-muted-foreground">Searching for award availability...</p>
                   </div>
                 ) : filteredResults.length > 0 ? (
                   <>
@@ -450,7 +450,7 @@ function SearchContent() {
                         )}
                       </div>
                       {lastUpdated && (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground/70">
                           Updated {new Date(lastUpdated).toLocaleTimeString()}
                         </span>
                       )}
@@ -473,11 +473,11 @@ function SearchContent() {
                   </>
                 ) : (
                   <Card className="p-12 text-center">
-                    <Plane className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">
+                    <Plane className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">
                       {dataSource === 'error' ? 'Error loading flights' : 'No flights found'}
                     </h3>
-                    <p className="text-slate-500 mb-4">
+                    <p className="text-muted-foreground mb-4">
                       {errorMessage ? (
                         <span className="text-red-600">{errorMessage}</span>
                       ) : (
@@ -496,11 +496,11 @@ function SearchContent() {
           </>
         ) : (
           <div className="text-center py-20">
-            <Plane className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <Plane className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Search for Award Flights
             </h2>
-            <p className="text-slate-500 max-w-md mx-auto">
+            <p className="text-muted-foreground max-w-md mx-auto">
               Enter your origin, destination, and travel dates to find the best award availability across multiple programs.
             </p>
           </div>
@@ -517,7 +517,7 @@ export default function SearchPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
         </div>
       }
     >
