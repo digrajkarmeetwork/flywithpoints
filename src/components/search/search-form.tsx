@@ -286,7 +286,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
               onClick={handleSearch}
               disabled={!searchParams.origin || !searchParams.destination || !departureDate}
               className={cn(
-                'w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium',
+                'w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium',
                 isHero && 'md:w-auto md:px-8'
               )}
             >

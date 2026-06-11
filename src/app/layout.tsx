@@ -8,6 +8,16 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#1a1a2e",
+};
+
 export const metadata: Metadata = {
   title: "FlyWithPoints - AI-Powered Award Flight Search",
   description: "Find the best award flights in real-time. AI-powered recommendations for optimal points transfers and maximum travel value across 23+ loyalty programs.",

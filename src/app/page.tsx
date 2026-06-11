@@ -78,23 +78,23 @@ export default function HomePage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
         </div>
 
-        {/* Floating Elements */}
+        {/* Floating Elements — hidden on mobile to prevent overflow */}
         <motion.div
-          className="absolute top-40 left-10 text-primary/20"
+          className="hidden md:block absolute top-40 left-10 text-primary/20"
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
           <Plane className="h-12 w-12 transform -rotate-45" />
         </motion.div>
         <motion.div
-          className="absolute top-60 right-20 text-chart-5/20"
+          className="hidden md:block absolute top-60 right-20 text-chart-5/20"
           animate={{ y: [0, 20, 0] }}
           transition={{ duration: 5, repeat: Infinity }}
         >
           <Star className="h-8 w-8" />
         </motion.div>
         <motion.div
-          className="absolute bottom-40 left-1/4 text-chart-2/20"
+          className="hidden md:block absolute bottom-40 left-1/4 text-chart-2/20"
           animate={{ y: [0, -15, 0] }}
           transition={{ duration: 3.5, repeat: Infinity }}
         >
