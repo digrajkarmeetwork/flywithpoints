@@ -151,10 +151,10 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
       <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
         <CardContent className="py-8 text-center">
           <Compass className="h-12 w-12 text-blue-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             Discover What You Can Book
           </h3>
-          <p className="text-slate-600 mb-4 max-w-md mx-auto">
+          <p className="text-muted-foreground mb-4 max-w-md mx-auto">
             Add your loyalty programs and point balances to see award flights you can book right now.
           </p>
         </CardContent>
@@ -195,7 +195,7 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
         {/* Summary stats */}
         {!isLoading && opportunities.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <Badge variant="outline" className="bg-white">
+            <Badge variant="outline" className="bg-card">
               {summary.total} opportunities found
             </Badge>
             {summary.affordable > 0 && (
@@ -215,7 +215,7 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
             )}
             {/* Live data indicator */}
             {isLoadingLive ? (
-              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1">
+              <Badge variant="outline" className="bg-muted text-muted-foreground border-border gap-1">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 Checking live availability...
               </Badge>
@@ -225,7 +225,7 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
                 Live data from seats.aero
               </Badge>
             ) : liveDataSource === 'unavailable' ? (
-              <Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 gap-1">
+              <Badge variant="outline" className="bg-muted text-muted-foreground border-border gap-1">
                 <WifiOff className="h-3 w-3" />
                 Using cached data
               </Badge>
@@ -243,11 +243,11 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
         {/* No results */}
         {!isLoading && opportunities.length === 0 && (
           <div className="text-center py-12">
-            <Compass className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-900 mb-2">
+            <Compass className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
               No matching opportunities
             </h3>
-            <p className="text-slate-500 max-w-md mx-auto">
+            <p className="text-muted-foreground max-w-md mx-auto">
               {destination
                 ? `No award flights found for "${destination}" with your current points. Try a different destination or add more programs.`
                 : 'Select a destination to see what award flights you can book.'}
@@ -306,11 +306,11 @@ export function ExploreOpportunitiesSection({ pointBalances }: ExploreOpportunit
 
         {/* Positioning suggestions */}
         {!isLoading && positioningOptions.length > 0 && homeAirport && (
-          <div className="mt-8 pt-6 border-t border-slate-200">
+          <div className="mt-8 pt-6 border-t border-border">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-blue-600" />
-                <h3 className="font-semibold text-slate-900">
+                <h3 className="font-semibold text-foreground">
                   Can&apos;t find availability from {homeAirport}?
                 </h3>
               </div>

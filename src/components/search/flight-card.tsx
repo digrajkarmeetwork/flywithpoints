@@ -26,7 +26,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
     if (cpp >= 2.0) return 'text-emerald-600 bg-emerald-50';
     if (cpp >= 1.5) return 'text-blue-600 bg-blue-50';
     if (cpp >= 1.0) return 'text-amber-600 bg-amber-50';
-    return 'text-slate-600 bg-slate-50';
+    return 'text-muted-foreground bg-muted';
   };
 
   const getValueLabel = (cpp: number) => {
@@ -70,19 +70,19 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-slate-200">
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-border">
         <CardContent className="p-0">
           <div className="flex flex-col lg:flex-row">
             {/* Flight Info */}
             <div className="flex-1 p-6">
               {/* Airline and Flight Info */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <Plane className="h-5 w-5 text-slate-600" />
+                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                  <Plane className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-medium text-slate-900">{flight.airline}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="font-medium text-foreground">{flight.airline}</p>
+                  <p className="text-sm text-muted-foreground">
                     {flight.flightNumber ? `${flight.flightNumber}` : ''}
                     {flight.flightNumber && flight.aircraft ? ' • ' : ''}
                     {flight.aircraft || ''}
@@ -109,18 +109,18 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 {/* Origin */}
                 <div className="text-center min-w-[80px]">
                   {hasSpecificTimes ? (
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-foreground">
                       {flight.departureTime}
                     </p>
                   ) : (
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-foreground">
                       {flight.origin}
                     </p>
                   )}
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-foreground">
                     {hasSpecificTimes ? flight.origin : ''}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {originAirport?.city || ''}
                   </p>
                 </div>
@@ -128,7 +128,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 {/* Route Line */}
                 <div className="flex-1 flex flex-col items-center px-4">
                   {/* Duration or Date */}
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     {flight.duration ? (
                       <>
                         <Clock className="h-3.5 w-3.5" />
@@ -142,11 +142,11 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                     ) : null}
                   </div>
                   <div className="w-full flex items-center gap-2">
-                    <div className="h-px flex-1 bg-slate-300" />
-                    <ArrowRight className="h-4 w-4 text-slate-400" />
-                    <div className="h-px flex-1 bg-slate-300" />
+                    <div className="h-px flex-1 bg-muted" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <div className="h-px flex-1 bg-muted" />
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {flight.stops === 0
                       ? 'Nonstop'
                       : flight.stops === 1
@@ -158,18 +158,18 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 {/* Destination */}
                 <div className="text-center min-w-[80px]">
                   {hasSpecificTimes ? (
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-foreground">
                       {flight.arrivalTime}
                     </p>
                   ) : (
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-foreground">
                       {flight.destination}
                     </p>
                   )}
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-foreground">
                     {hasSpecificTimes ? flight.destination : ''}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {destAirport?.city || ''}
                   </p>
                 </div>
@@ -204,7 +204,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 {hasSegments && (
                   <button
                     onClick={() => setShowSegments(!showSegments)}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground hover:bg-accent transition-colors"
                   >
                     {flight.segments!.length} segments
                     {showSegments ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -214,21 +214,21 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
 
               {/* Expandable Segments */}
               {hasSegments && showSegments && (
-                <div className="mt-3 pt-3 border-t border-slate-200 space-y-2">
+                <div className="mt-3 pt-3 border-t border-border space-y-2">
                   {flight.segments!.map((segment, idx) => (
                     <div key={idx} className="flex items-center gap-3 text-sm">
-                      <span className="text-slate-400 w-4">{idx + 1}.</span>
-                      <span className="font-medium text-slate-700">{segment.flightNumber}</span>
-                      <span className="text-slate-500">
+                      <span className="text-muted-foreground w-4">{idx + 1}.</span>
+                      <span className="font-medium text-foreground">{segment.flightNumber}</span>
+                      <span className="text-muted-foreground">
                         {segment.origin} → {segment.destination}
                       </span>
                       {segment.departureTime && segment.arrivalTime && (
-                        <span className="text-slate-400 text-xs">
+                        <span className="text-muted-foreground text-xs">
                           {segment.departureTime} - {segment.arrivalTime}
                         </span>
                       )}
                       {segment.aircraft && (
-                        <span className="text-slate-400 text-xs">({segment.aircraft})</span>
+                        <span className="text-muted-foreground text-xs">({segment.aircraft})</span>
                       )}
                     </div>
                   ))}
@@ -237,19 +237,19 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
             </div>
 
             {/* Points and Booking */}
-            <div className="lg:w-64 bg-slate-50 p-6 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-slate-200">
+            <div className="lg:w-64 bg-card p-6 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-border">
               {/* Program */}
               <div className="mb-4">
-                <p className="text-sm text-slate-500 mb-1">Book with</p>
-                <p className="font-medium text-slate-900">{flight.program.name}</p>
+                <p className="text-sm text-muted-foreground mb-1">Book with</p>
+                <p className="font-medium text-foreground">{flight.program.name}</p>
               </div>
 
               {/* Points */}
               <div className="mb-4">
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-foreground">
                   {flight.pointsRequired.toLocaleString()}
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   points + ${flight.taxesFees.toFixed(0)} taxes
                 </p>
               </div>
@@ -269,7 +269,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
               {flight.bookingUrl ? (
                 <div className="space-y-2">
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-primary hover:bg-primary/90"
                     onClick={() => window.open(flight.bookingUrl, '_blank')}
                   >
                     <span>Book Now</span>
@@ -278,7 +278,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                   {hasMultipleBookingLinks && (
                     <button
                       onClick={() => setShowBookingLinks(!showBookingLinks)}
-                      className="w-full text-xs text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1"
+                      className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
                     >
                       {showBookingLinks ? 'Hide' : 'Show'} alternative booking options
                       {showBookingLinks ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -307,7 +307,7 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                 <div className="space-y-2">
                   <div className="group relative">
                     <Button
-                      className="w-full bg-slate-300 hover:bg-slate-400 text-slate-600"
+                      className="w-full bg-muted hover:bg-muted text-muted-foreground"
                       disabled={false}
                       onClick={() => {
                         if (flight.program.awardBookingUrl) {
@@ -320,11 +320,11 @@ export function FlightCard({ flight, index = 0 }: FlightCardProps) {
                     </Button>
                     {/* Tooltip on hover */}
                     <div className="absolute bottom-full left-0 right-0 mb-2 hidden group-hover:block z-10">
-                      <div className="bg-slate-800 text-white text-xs rounded-lg p-3 shadow-lg">
+                      <div className="bg-popover text-white text-xs rounded-lg p-3 shadow-lg">
                         <p className="font-medium mb-1">Direct booking coming soon!</p>
-                        <p className="text-slate-300">For now, search for this award flight directly on the airline's website.</p>
+                        <p className="text-muted-foreground/50">For now, search for this award flight directly on the airline's website.</p>
                       </div>
-                      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-slate-800 rotate-45" />
+                      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-popover rotate-45" />
                     </div>
                   </div>
                 </div>

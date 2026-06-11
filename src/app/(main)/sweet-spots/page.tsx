@@ -76,7 +76,7 @@ export default function SweetSpotsPage() {
     if (cpp >= 15) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     if (cpp >= 10) return 'bg-blue-50 text-blue-700 border-blue-200';
     if (cpp >= 5) return 'bg-amber-50 text-amber-700 border-amber-200';
-    return 'bg-slate-50 text-slate-700 border-slate-200';
+    return 'bg-background text-foreground border-border';
   };
 
   const getValueLabel = (cpp: number) => {
@@ -87,7 +87,7 @@ export default function SweetSpotsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="pt-20 pb-16">
@@ -118,7 +118,7 @@ export default function SweetSpotsPage() {
             <CardContent className="p-4 md:p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     placeholder="Search sweet spots..."
                     value={searchQuery}
@@ -172,7 +172,7 @@ export default function SweetSpotsPage() {
         {/* Results */}
         <div className="container mx-auto max-w-6xl px-4 py-8">
           <div className="flex items-center justify-between mb-6">
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               <span className="font-medium">{filteredSpots.length}</span> sweet spots
               found
             </p>
@@ -233,36 +233,36 @@ export default function SweetSpotsPage() {
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-blue-600 transition-colors">
                         {spot.title}
                       </h3>
 
                       {/* Description */}
-                      <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                         {spot.description}
                       </p>
 
                       {/* Program */}
                       <div className="flex items-center gap-2 mb-4">
-                        <div className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center">
-                          <Plane className="h-3.5 w-3.5 text-slate-600" />
+                        <div className="w-6 h-6 bg-muted rounded flex items-center justify-center">
+                          <Plane className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
-                        <span className="text-sm text-slate-700">
+                        <span className="text-sm text-foreground">
                           {program?.name || spot.programId}
                         </span>
                       </div>
 
                       {/* Points & Value */}
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                      <div className="flex items-center justify-between pt-4 border-t border-border">
                         <div>
-                          <span className="text-2xl font-bold text-slate-900">
+                          <span className="text-2xl font-bold text-foreground">
                             {spot.pointsRequired.toLocaleString()}
                           </span>
-                          <span className="text-slate-500 ml-1">points</span>
+                          <span className="text-muted-foreground ml-1">points</span>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-slate-500">Typical cash</p>
-                          <p className="font-medium text-slate-900">
+                          <p className="text-sm text-muted-foreground">Typical cash</p>
+                          <p className="font-medium text-foreground">
                             ${spot.typicalCashPrice.toLocaleString()}
                           </p>
                         </div>
@@ -288,11 +288,11 @@ export default function SweetSpotsPage() {
 
           {filteredSpots.length === 0 && (
             <Card className="p-12 text-center">
-              <Filter className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 mb-2">
+              <Filter className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 No sweet spots found
               </h3>
-              <p className="text-slate-500 mb-4">
+              <p className="text-muted-foreground mb-4">
                 Try adjusting your filters or search query.
               </p>
               <Button

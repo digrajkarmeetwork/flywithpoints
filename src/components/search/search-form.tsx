@@ -85,7 +85,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl shadow-xl',
+        'bg-card rounded-2xl shadow-xl',
         isHero ? 'p-6 md:p-8' : 'p-4'
       )}
     >
@@ -112,7 +112,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
             variant="ghost"
             size="icon"
             onClick={swapAirports}
-            className="rounded-full hover:bg-blue-50 hover:text-blue-600"
+            className="rounded-full hover:bg-accent hover:text-blue-600"
           >
             <ArrowRightLeft className="h-5 w-5" />
           </Button>
@@ -129,7 +129,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
 
         {/* Departure Date */}
         <div>
-          <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+          <Label className="text-sm font-medium text-foreground mb-1.5 block">
             Departure
           </Label>
           <Popover>
@@ -137,11 +137,11 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
               <Button
                 variant="outline"
                 className={cn(
-                  'w-full h-12 justify-start text-left font-normal border-slate-200',
-                  !departureDate && 'text-slate-500'
+                  'w-full h-12 justify-start text-left font-normal border-border',
+                  !departureDate && 'text-muted-foreground'
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
+                <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                 {departureDate ? (
                   format(departureDate, 'MMM d, yyyy')
                 ) : (
@@ -163,7 +163,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
 
         {/* Flexible Date Range */}
         <div>
-          <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+          <Label className="text-sm font-medium text-foreground mb-1.5 block">
             <span className="flex items-center gap-1">
               <CalendarRange className="h-3.5 w-3.5" />
               Flexibility
@@ -173,7 +173,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
             value={flexibleRange}
             onValueChange={(value) => setFlexibleRange(value as FlexibleRange)}
           >
-            <SelectTrigger className="h-12 border-slate-200">
+            <SelectTrigger className="h-12 border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -189,7 +189,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
         {/* Return Date (Hero only) */}
         {isHero && (
           <div>
-            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+            <Label className="text-sm font-medium text-foreground mb-1.5 block">
               Return (optional)
             </Label>
             <Popover>
@@ -197,11 +197,11 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
                 <Button
                   variant="outline"
                   className={cn(
-                    'w-full h-12 justify-start text-left font-normal border-slate-200',
-                    !returnDate && 'text-slate-500'
+                    'w-full h-12 justify-start text-left font-normal border-border',
+                    !returnDate && 'text-muted-foreground'
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                   {returnDate ? (
                     format(returnDate, 'MMM d, yyyy')
                   ) : (
@@ -227,7 +227,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
 
         {/* Cabin Class */}
         <div>
-          <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+          <Label className="text-sm font-medium text-foreground mb-1.5 block">
             Cabin Class
           </Label>
           <Select
@@ -238,7 +238,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
               })
             }
           >
-            <SelectTrigger className="h-12 border-slate-200">
+            <SelectTrigger className="h-12 border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -253,7 +253,7 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
         {/* Passengers (Hero only) */}
         {isHero && (
           <div>
-            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+            <Label className="text-sm font-medium text-foreground mb-1.5 block">
               Passengers
             </Label>
             <Select
@@ -262,9 +262,9 @@ export function SearchForm({ variant = 'hero', onSearch }: SearchFormProps) {
                 setSearchParams({ passengers: parseInt(value) })
               }
             >
-              <SelectTrigger className="h-12 border-slate-200">
+              <SelectTrigger className="h-12 border-border">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-slate-400" />
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   <SelectValue />
                 </div>
               </SelectTrigger>

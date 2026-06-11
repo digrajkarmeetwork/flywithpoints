@@ -75,7 +75,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-background p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -84,13 +84,13 @@ function LoginContent() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <Plane className="h-10 w-10 text-blue-600 transform -rotate-45" />
-          <span className="text-2xl font-bold text-slate-900">
-            Fly<span className="text-blue-600">WithPoints</span>
+          <Plane className="h-10 w-10 text-primary transform -rotate-45" />
+          <span className="text-2xl font-bold text-foreground">
+            Fly<span className="text-primary">WithPoints</span>
           </span>
         </Link>
 
-        <Card className="border-slate-200 shadow-xl">
+        <Card className="border-border shadow-xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
             <CardDescription className="text-center">
@@ -128,10 +128,10 @@ function LoginContent() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">
+                <span className="bg-card px-2 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
@@ -142,7 +142,7 @@ function LoginContent() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -161,13 +161,13 @@ function LoginContent() {
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-sm text-primary hover:text-primary/80"
                   >
                     Forgot password?
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -178,7 +178,7 @@ function LoginContent() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -194,7 +194,7 @@ function LoginContent() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700"
+                className="w-full h-12 bg-primary hover:bg-primary/90"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -210,11 +210,11 @@ function LoginContent() {
           </CardContent>
 
           <CardFooter className="justify-center">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link
                 href="/signup"
-                className="font-medium text-blue-600 hover:text-blue-700"
+                className="font-medium text-primary hover:text-primary/80"
               >
                 Sign up
               </Link>
@@ -230,8 +230,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50">
-          <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-background">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
         </div>
       }
     >

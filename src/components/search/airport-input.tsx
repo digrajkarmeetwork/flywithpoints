@@ -88,11 +88,11 @@ export function AirportInput({
 
   return (
     <div className={cn('relative', className)}>
-      <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+      <Label className="text-sm font-medium text-foreground mb-1.5 block">
         {label}
       </Label>
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
           {icon === 'departure' ? (
             <Plane className="h-5 w-5 transform rotate-45" />
           ) : (
@@ -106,19 +106,19 @@ export function AirportInput({
           value={displayValue()}
           onChange={handleInputChange}
           onFocus={handleFocus}
-          className="pl-10 h-12 text-base bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+          className="pl-10 h-12 text-base bg-card border-border focus:border-primary focus:ring-primary"
         />
       </div>
 
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 max-h-64 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-card rounded-lg shadow-lg border border-border max-h-64 overflow-auto"
         >
           {results.length > 0 ? (
             <>
               {!query && (
-                <div className="px-3 py-2 text-xs font-medium text-slate-500 bg-slate-50 border-b border-slate-100">
+                <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-muted border-b border-border">
                   Popular Airports
                 </div>
               )}
@@ -126,18 +126,18 @@ export function AirportInput({
                 <button
                   key={airport.code}
                   onClick={() => handleSelect(airport)}
-                  className="w-full px-3 py-2.5 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors flex items-center gap-3"
+                  className="w-full px-3 py-2.5 text-left hover:bg-accent focus:bg-accent focus:outline-none transition-colors flex items-center gap-3"
                 >
-                  <div className="flex-shrink-0 w-12 h-8 bg-slate-100 rounded flex items-center justify-center">
-                    <span className="text-sm font-bold text-slate-700">
+                  <div className="flex-shrink-0 w-12 h-8 bg-muted rounded flex items-center justify-center">
+                    <span className="text-sm font-bold text-foreground">
                       {airport.code}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {airport.city}
                     </p>
-                    <p className="text-xs text-slate-500 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {airport.name}
                     </p>
                   </div>
@@ -145,7 +145,7 @@ export function AirportInput({
               ))}
             </>
           ) : (
-            <div className="px-3 py-8 text-center text-slate-500">
+            <div className="px-3 py-8 text-center text-muted-foreground">
               No airports found for &quot;{query}&quot;
             </div>
           )}

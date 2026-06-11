@@ -304,7 +304,7 @@ function SearchContent() {
                               });
                             }
                           }}
-                          className="rounded border-slate-300 text-primary focus:ring-blue-500"
+                          className="rounded border-border text-primary focus:ring-primary"
                         />
                         <span className="text-sm text-foreground/80">{program.name}</span>
                       </label>
@@ -332,7 +332,7 @@ function SearchContent() {
                           name="stops"
                           checked={filters.maxStops === option.value}
                           onChange={() => setFilters({ maxStops: option.value })}
-                          className="border-slate-300 text-primary focus:ring-blue-500"
+                          className="border-border text-primary focus:ring-primary"
                         />
                         <span className="text-sm text-foreground/80">{option.label}</span>
                       </label>
@@ -343,7 +343,7 @@ function SearchContent() {
                         name="stops"
                         checked={filters.maxStops === null}
                         onChange={() => setFilters({ maxStops: null })}
-                        className="border-slate-300 text-primary focus:ring-blue-500"
+                        className="border-border text-primary focus:ring-primary"
                       />
                       <span className="text-sm text-foreground/80">Any number of stops</span>
                     </label>
@@ -378,7 +378,7 @@ function SearchContent() {
                                 });
                               }
                             }}
-                            className="rounded border-slate-300 text-primary focus:ring-blue-500"
+                            className="rounded border-border text-primary focus:ring-primary"
                           />
                           <span className="text-sm text-foreground/80">{airline}</span>
                         </label>
@@ -435,7 +435,7 @@ function SearchContent() {
                   <>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-white">
+                        <Badge variant="outline" className="bg-card">
                           {filteredResults.length} flights found
                         </Badge>
                         {dataSource === 'seats.aero' && (
@@ -516,7 +516,7 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <Loader2 className="h-10 w-10 text-primary animate-spin" />
         </div>
       }

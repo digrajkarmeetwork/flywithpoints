@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-background p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -63,13 +63,13 @@ export default function ForgotPasswordPage() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <Plane className="h-10 w-10 text-blue-600 transform -rotate-45" />
-          <span className="text-2xl font-bold text-slate-900">
-            Fly<span className="text-blue-600">WithPoints</span>
+          <Plane className="h-10 w-10 text-primary transform -rotate-45" />
+          <span className="text-2xl font-bold text-foreground">
+            Fly<span className="text-primary">WithPoints</span>
           </span>
         </Link>
 
-        <Card className="border-slate-200 shadow-xl">
+        <Card className="border-border shadow-xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">
               {isSuccess ? 'Check your email' : 'Reset your password'}
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
                     <CheckCircle className="h-8 w-8 text-green-600" />
                   </div>
                 </div>
-                <p className="text-center text-sm text-slate-600">
+                <p className="text-center text-sm text-muted-foreground">
                   If an account exists with that email, you will receive a password reset link shortly.
                   Check your spam folder if you don&apos;t see it.
                 </p>
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-700"
+                  className="w-full h-12 bg-primary hover:bg-primary/90"
                   disabled={isLoading}
                 >
                   {isLoading ? (

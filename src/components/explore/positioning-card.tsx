@@ -41,10 +41,10 @@ export function PositioningCard({ option, homeAirport, index = 0 }: PositioningC
                 <MapPin className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium text-foreground">
                   Fly from {alternateOriginCity} instead
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Better availability from {alternateOrigin}
                 </p>
               </div>
@@ -55,16 +55,16 @@ export function PositioningCard({ option, homeAirport, index = 0 }: PositioningC
           </div>
 
           {/* Journey breakdown */}
-          <div className="bg-white rounded-lg p-3 mb-3 border border-slate-100">
+          <div className="bg-card rounded-lg p-3 mb-3 border border-border">
             <div className="flex items-center gap-3 text-sm">
               {/* Step 1: Positioning flight */}
               <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
+                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                   1
                 </div>
-                <span className="text-slate-600">{homeAirport || 'Home'}</span>
-                <ArrowRight className="h-3 w-3 text-slate-400" />
-                <span className="font-medium text-slate-900">{alternateOrigin}</span>
+                <span className="text-muted-foreground">{homeAirport || 'Home'}</span>
+                <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                <span className="font-medium text-foreground">{alternateOrigin}</span>
               </div>
 
               <div className="flex items-center gap-1 text-emerald-600">
@@ -79,9 +79,9 @@ export function PositioningCard({ option, homeAirport, index = 0 }: PositioningC
                 <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600">
                   2
                 </div>
-                <span className="text-slate-600">{alternateOrigin}</span>
-                <ArrowRight className="h-3 w-3 text-slate-400" />
-                <span className="font-medium text-slate-900">{awardOpportunity.sweetSpot.destinationRegion}</span>
+                <span className="text-muted-foreground">{alternateOrigin}</span>
+                <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                <span className="font-medium text-foreground">{awardOpportunity.sweetSpot.destinationRegion}</span>
               </div>
 
               <div className="flex items-center gap-1 text-blue-600">
@@ -93,14 +93,14 @@ export function PositioningCard({ option, homeAirport, index = 0 }: PositioningC
 
           {/* Value summary */}
           <div className="flex items-center justify-between mb-3 text-sm">
-            <span className="text-slate-600">Net value after positioning:</span>
+            <span className="text-muted-foreground">Net value after positioning:</span>
             <span className="font-semibold text-emerald-600">
               ${totalValue.toLocaleString()}
             </span>
           </div>
 
           {/* Reasoning */}
-          <p className="text-xs text-slate-500 mb-3 line-clamp-2">
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
             {reasoning}
           </p>
 

@@ -234,17 +234,17 @@ function ExploreAirlinesContent() {
   const hasActiveFilters = originFilter || destinationFilter;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto max-w-6xl px-4">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
               Explore by Airline
             </h1>
-            <p className="text-lg text-slate-600">
+            <p className="text-lg text-muted-foreground">
               Find all available award flights on your favorite airline, then filter by origin or destination.
             </p>
           </div>
@@ -262,25 +262,25 @@ function ExploreAirlinesContent() {
             >
               {/* Airline Header */}
               {data?.airline && (
-                <Card className="mb-6 border-slate-200 overflow-hidden">
+                <Card className="mb-6 border-border overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6 text-white">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                      <div className="w-16 h-16 bg-card/20 rounded-xl flex items-center justify-center">
                         <Plane className="h-8 w-8" />
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold">{data.airline.name}</h2>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge className="bg-white/20 text-white border-white/30">
+                          <Badge className="bg-card/20 text-white border-white/30">
                             {data.airline.code}
                           </Badge>
                           {data.airline.alliance && (
-                            <Badge className="bg-white/20 text-white border-white/30 capitalize">
+                            <Badge className="bg-card/20 text-white border-white/30 capitalize">
                               {data.airline.alliance}
                             </Badge>
                           )}
                           {cabinParam && cabinParam !== 'all' && (
-                            <Badge className="bg-white/20 text-white border-white/30 capitalize">
+                            <Badge className="bg-card/20 text-white border-white/30 capitalize">
                               {cabinParam.replace('_', ' ')}
                             </Badge>
                           )}
@@ -302,17 +302,17 @@ function ExploreAirlinesContent() {
                       </div>
                     )}
                   </div>
-                  <CardContent className="p-4 bg-white">
+                  <CardContent className="p-4 bg-card">
                     <div className="flex flex-wrap items-center gap-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-slate-400" />
-                        <span className="text-slate-600">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
                           {data.routes.length} routes available
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-slate-400" />
-                        <span className="text-slate-600">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
                           {data.totalFlights} total flights found
                         </span>
                       </div>
@@ -325,10 +325,10 @@ function ExploreAirlinesContent() {
               {loading && (
                 <div className="flex flex-col items-center justify-center py-20">
                   <Loader2 className="h-12 w-12 text-blue-600 animate-spin mb-4" />
-                  <p className="text-slate-600">
+                  <p className="text-muted-foreground">
                     Searching for {airlineCode} award availability...
                   </p>
-                  <p className="text-sm text-slate-400 mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">
                     This may take a moment as we search across multiple programs.
                   </p>
                 </div>
@@ -353,7 +353,7 @@ function ExploreAirlinesContent() {
               {!loading && !error && data && (
                 <>
                   {/* Route Filters */}
-                  <Card className="mb-6 border-slate-200">
+                  <Card className="mb-6 border-border">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <SlidersHorizontal className="h-5 w-5 text-blue-600" />
@@ -363,7 +363,7 @@ function ExploreAirlinesContent() {
                             variant="ghost"
                             size="sm"
                             onClick={clearFilters}
-                            className="ml-auto text-slate-500 hover:text-slate-700"
+                            className="ml-auto text-muted-foreground hover:text-foreground"
                           >
                             <X className="h-4 w-4 mr-1" />
                             Clear filters
@@ -375,8 +375,8 @@ function ExploreAirlinesContent() {
                       {/* Origin and Destination Filters */}
                       <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                          <Label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
-                            <PlaneTakeoff className="h-4 w-4 text-slate-400" />
+                          <Label className="text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
+                            <PlaneTakeoff className="h-4 w-4 text-muted-foreground" />
                             Filter by Origin
                           </Label>
                           <Select
@@ -404,8 +404,8 @@ function ExploreAirlinesContent() {
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
-                            <PlaneLanding className="h-4 w-4 text-slate-400" />
+                          <Label className="text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
+                            <PlaneLanding className="h-4 w-4 text-muted-foreground" />
                             Filter by Destination
                           </Label>
                           <Select
@@ -435,9 +435,9 @@ function ExploreAirlinesContent() {
 
                       {/* Positioning Helper */}
                       {destinationFilter && (
-                        <div className="pt-4 border-t border-slate-200">
-                          <Label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
-                            <Navigation className="h-4 w-4 text-slate-400" />
+                        <div className="pt-4 border-t border-border">
+                          <Label className="text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
+                            <Navigation className="h-4 w-4 text-muted-foreground" />
                             Your Home Airport (for positioning suggestions)
                           </Label>
                           <div className="flex gap-2">
@@ -495,7 +495,7 @@ function ExploreAirlinesContent() {
                                           'w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors',
                                           originFilter === alt.origin
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-white hover:bg-blue-100'
+                                            : 'bg-card hover:bg-blue-100'
                                         )}
                                       >
                                         <div>
@@ -505,7 +505,7 @@ function ExploreAirlinesContent() {
                                           {alt.originCountry && (
                                             <span className={cn(
                                               'text-sm ml-2',
-                                              originFilter === alt.origin ? 'text-blue-100' : 'text-slate-500'
+                                              originFilter === alt.origin ? 'text-blue-100' : 'text-muted-foreground'
                                             )}>
                                               ({alt.originCountry})
                                             </span>
@@ -513,7 +513,7 @@ function ExploreAirlinesContent() {
                                         </div>
                                         <div className={cn(
                                           'text-sm',
-                                          originFilter === alt.origin ? 'text-blue-100' : 'text-slate-600'
+                                          originFilter === alt.origin ? 'text-blue-100' : 'text-muted-foreground'
                                         )}>
                                           {alt.count} flights
                                           <span className="mx-1">|</span>
@@ -529,7 +529,7 @@ function ExploreAirlinesContent() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => setOriginFilter(homeAirport)}
-                                  className="mt-2 bg-white"
+                                  className="mt-2 bg-card"
                                 >
                                   Show flights from {homeAirport}
                                 </Button>
@@ -541,8 +541,8 @@ function ExploreAirlinesContent() {
 
                       {/* Quick Route Buttons */}
                       {!originFilter && !destinationFilter && data.routes.length > 0 && (
-                        <div className="pt-4 border-t border-slate-200">
-                          <p className="text-sm text-slate-500 mb-3">Popular routes:</p>
+                        <div className="pt-4 border-t border-border">
+                          <p className="text-sm text-muted-foreground mb-3">Popular routes:</p>
                           <div className="flex flex-wrap gap-2">
                             {data.routes
                               .sort((a, b) => b.count - a.count)
@@ -573,7 +573,7 @@ function ExploreAirlinesContent() {
                   {/* Results Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-muted-foreground">
                         Showing {Math.min(showLimit, displayedFlights.length)} of{' '}
                         {displayedFlights.length} flights
                         {hasActiveFilters && (
@@ -583,7 +583,7 @@ function ExploreAirlinesContent() {
                         )}
                       </p>
                       {originFilter || destinationFilter ? (
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {originFilter && `From: ${originFilter}`}
                           {originFilter && destinationFilter && ' | '}
                           {destinationFilter && `To: ${destinationFilter}`}
@@ -624,13 +624,13 @@ function ExploreAirlinesContent() {
                       )}
                     </div>
                   ) : (
-                    <Card className="border-slate-200">
+                    <Card className="border-border">
                       <CardContent className="p-12 text-center">
-                        <Plane className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-slate-600">
+                        <Plane className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                        <p className="text-muted-foreground">
                           No flights found for this filter combination.
                         </p>
-                        <p className="text-sm text-slate-400 mt-2">
+                        <p className="text-sm text-muted-foreground mt-2">
                           Try adjusting your origin or destination filters.
                         </p>
                         <Button
@@ -648,15 +648,15 @@ function ExploreAirlinesContent() {
 
               {/* No airline selected yet */}
               {!data && !loading && !error && (
-                <Card className="border-slate-200">
+                <Card className="border-border">
                   <CardContent className="p-12 text-center">
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Plane className="h-8 w-8 text-blue-600" />
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       Select an Airline to Explore
                     </h3>
-                    <p className="text-slate-600 max-w-md mx-auto">
+                    <p className="text-muted-foreground max-w-md mx-auto">
                       Choose an airline from the dropdown above to see all available
                       award flights, regardless of departure city or date.
                     </p>
@@ -668,21 +668,21 @@ function ExploreAirlinesContent() {
 
           {/* No search yet */}
           {!airlineCode && (
-            <Card className="border-slate-200">
+            <Card className="border-border">
               <CardContent className="p-12 text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Plane className="h-8 w-8 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   Explore Award Flights by Airline
                 </h3>
-                <p className="text-slate-600 max-w-md mx-auto mb-4">
+                <p className="text-muted-foreground max-w-md mx-auto mb-4">
                   Want to fly Qatar Airways Qsuites? Singapore Suites? Emirates First?
                   Select an airline above to see all available award flights.
                 </p>
-                <div className="bg-slate-50 rounded-lg p-4 max-w-lg mx-auto text-left">
-                  <p className="text-sm font-medium text-slate-700 mb-2">How it works:</p>
-                  <ol className="text-sm text-slate-600 space-y-1 list-decimal list-inside">
+                <div className="bg-background rounded-lg p-4 max-w-lg mx-auto text-left">
+                  <p className="text-sm font-medium text-foreground mb-2">How it works:</p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                     <li>Select an airline and cabin class</li>
                     <li>See all available routes on that airline</li>
                     <li>Filter by destination to find where you want to go</li>
@@ -711,7 +711,7 @@ export default function ExploreAirlinesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
         </div>
       }

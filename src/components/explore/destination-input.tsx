@@ -108,12 +108,12 @@ export function DestinationInput({
   return (
     <div className={cn('relative', className)}>
       {label && (
-        <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
+        <Label className="text-sm font-medium text-foreground mb-1.5 block">
           {label}
         </Label>
       )}
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
           <Globe className="h-5 w-5" />
         </div>
         <Input
@@ -123,12 +123,12 @@ export function DestinationInput({
           value={displayValue()}
           onChange={handleInputChange}
           onFocus={handleFocus}
-          className="pl-10 h-12 text-base bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+          className="pl-10 h-12 text-base bg-card border-border focus:border-primary focus:ring-primary"
         />
         {value && !isOpen && (
           <button
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <span className="sr-only">Clear</span>
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,12 +141,12 @@ export function DestinationInput({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 max-h-64 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-card rounded-lg shadow-lg border border-border max-h-64 overflow-auto"
         >
           {results.length > 0 ? (
             <>
               {!query && (
-                <div className="px-3 py-2 text-xs font-medium text-slate-500 bg-slate-50 border-b border-slate-100">
+                <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-muted border-b border-border">
                   Select a Destination
                 </div>
               )}
@@ -154,33 +154,33 @@ export function DestinationInput({
                 <button
                   key={`${option.type}-${option.value}-${index}`}
                   onClick={() => handleSelect(option)}
-                  className="w-full px-3 py-2.5 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors flex items-center gap-3"
+                  className="w-full px-3 py-2.5 text-left hover:bg-accent focus:bg-accent focus:outline-none transition-colors flex items-center gap-3"
                 >
-                  <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                  <div className="flex-shrink-0 w-8 h-8 bg-muted rounded-full flex items-center justify-center">
                     {option.type === 'region' ? (
-                      <Globe className="h-4 w-4 text-slate-600" />
+                      <Globe className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <MapPin className="h-4 w-4 text-slate-600" />
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {option.value}
                     </p>
                     {option.type === 'country' && (
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {option.region}
                       </p>
                     )}
                   </div>
-                  <span className="text-xs text-slate-400 capitalize">
+                  <span className="text-xs text-muted-foreground capitalize">
                     {option.type}
                   </span>
                 </button>
               ))}
             </>
           ) : (
-            <div className="px-3 py-8 text-center text-slate-500">
+            <div className="px-3 py-8 text-center text-muted-foreground">
               No destinations found for &quot;{query}&quot;
             </div>
           )}

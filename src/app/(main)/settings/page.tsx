@@ -94,19 +94,19 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-          <p className="text-slate-600 mt-1">Manage your account preferences</p>
+          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-1">Manage your account preferences</p>
         </div>
 
         <motion.div
@@ -115,7 +115,7 @@ export default function SettingsPage() {
           transition={{ duration: 0.5 }}
         >
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="bg-white border border-slate-200">
+            <TabsList className="bg-card border border-border">
               <TabsTrigger value="profile" className="gap-2">
                 <UserIcon className="h-4 w-4" />
                 Profile
@@ -152,15 +152,15 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="email"
                         value={formData.email}
                         disabled
-                        className="pl-10 bg-slate-50"
+                        className="pl-10 bg-muted"
                       />
                     </div>
-                    <p className="text-xs text-slate-500">Email cannot be changed</p>
+                    <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                   </div>
                   <Button onClick={handleSaveProfile} disabled={isSaving}>
                     {isSaving ? (
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Email Alerts</Label>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Receive alerts when award availability matches your searches
                       </p>
                     </div>
@@ -206,7 +206,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Price Drop Notifications</Label>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Get notified when points required for a route decreases
                       </p>
                     </div>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Weekly Digest</Label>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Receive a weekly summary of the best deals
                       </p>
                     </div>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>New Routes</Label>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Get notified about new award routes added
                       </p>
                     </div>
