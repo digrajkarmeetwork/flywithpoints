@@ -95,6 +95,15 @@ const VALID_ISSUERS = new Set([
   'turkish', 'united', 'velocity', 'virginatlantic',
 ]);
 
+// The actor takes ~3-4s per issuer. On Vercel's 60s function limit we must keep
+// each run bounded, so default to a curated set of popular issuers when the user
+// hasn't filtered to specific programs, and cap the total number of issuers.
+const DEFAULT_ISSUERS = [
+  'united', 'american', 'delta', 'alaska',
+  'aeroplan', 'flyingblue', 'virginatlantic', 'emirates',
+];
+const MAX_ISSUERS = 10;
+
 // app cabin -> actor cabin
 const CABIN_MAP: Record<string, string> = {
   'economy': 'economy',
@@ -150,14 +159,16 @@ export async function searchAwardFlights(params: ApifySearchParams): Promise<Api
     input.cabin = CABIN_MAP[params.cabin] || '';
   }
 
+  let issuers: string[] = [];
   if (params.programs && params.programs.length > 0) {
-    const issuers = params.programs
+    issuers = params.programs
       .map((p) => PROGRAM_MAP[p] || p)
       .filter((v) => VALID_ISSUERS.has(v));
-    if (issuers.length > 0) {
-      input.issuers = issuers;
-    }
   }
+  if (issuers.length === 0) {
+    issuers = DEFAULT_ISSUERS;
+  }
+  input.issuers = issuers.slice(0, MAX_ISSUERS);
 
   // Run the actor synchronously and get the dataset items in one call.
   const response = await fetch(
