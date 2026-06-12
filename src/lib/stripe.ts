@@ -1,6 +1,29 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Lazily instantiate the Stripe client. Constructing it at module load would
+// require STRIPE_SECRET_KEY at build time (during Next.js page-data collection),
+// which crashes the build when the secret is only present at runtime. The Proxy
+// defers construction until the first property access inside a request handler.
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY is not set');
+    }
+    stripeInstance = new Stripe(apiKey);
+  }
+  return stripeInstance;
+}
+
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop, receiver) {
+    const instance = getStripe();
+    const value = Reflect.get(instance, prop, receiver);
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});
 
 export const PLANS = {
   free: {
