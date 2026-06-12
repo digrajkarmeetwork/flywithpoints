@@ -1,5 +1,6 @@
 const APIFY_BASE_URL = 'https://api.apify.com/v2';
-const ACTOR_ID = 'igolaizola/flight-award-scraper';
+// Apify REST API expects the actor id as `username~actorName` (tilde, not slash).
+const ACTOR_ID = 'igolaizola~flight-award-scraper';
 
 interface ApifySearchParams {
   origin: string;
@@ -10,39 +11,60 @@ interface ApifySearchParams {
   programs?: string[];
 }
 
-interface ApifyAwardResult {
-  program: string;
-  origin: string;
-  destination: string;
-  date: string;
-  cabin: string;
-  miles: number;
-  taxes: number;
-  taxCurrency: string;
-  seats: number;
-  flights: ApifyFlightSegment[];
-  bookingUrl?: string;
+// ---- Actual shape returned by igolaizola/flight-award-scraper ----
+interface ApifyAirline {
+  code: string;
+  name: string;
 }
 
-interface ApifyFlightSegment {
-  airline: string;
+interface ApifyCabin {
+  name: string; // economy | premium | business | first
+  available: boolean;
+  mileage: number;
+  taxes: number; // minor currency units (cents)
+  airlines?: ApifyAirline[];
+  direct?: boolean;
+}
+
+interface ApifySegment {
   flightNumber: string;
   origin: string;
   destination: string;
   departure: string;
   arrival: string;
-  aircraft?: string;
   duration?: number;
+  fareClass?: string;
+  aircraftName?: string;
+  cabin?: string;
 }
 
-interface ApifyRunResponse {
-  data: {
-    id: string;
-    status: string;
-    defaultDatasetId: string;
-  };
+interface ApifyItinerary {
+  origin: string;
+  destination: string;
+  departure: string;
+  arrival: string;
+  totalDuration?: number;
+  stops?: number;
+  airlines?: ApifyAirline[];
+  aircrafts?: string[];
+  flightNumbers?: string[];
+  segments?: ApifySegment[];
 }
 
+interface ApifyAwardResult {
+  origin: string;
+  originName?: string;
+  destination: string;
+  destinationName?: string;
+  date: string;
+  issuer: string;
+  issuerName?: string;
+  link?: string;
+  cabins?: ApifyCabin[];
+  itineraries?: ApifyItinerary[];
+}
+
+// Map the app's loyalty-program ids to the scraper's issuer codes.
 const PROGRAM_MAP: Record<string, string> = {
   'united-mileageplus': 'united',
   'american-aadvantage': 'american',
@@ -50,14 +72,30 @@ const PROGRAM_MAP: Record<string, string> = {
   'alaska-mileageplan': 'alaska',
   'jetblue-trueblue': 'jetblue',
   'aeroplan': 'aeroplan',
-  'avios': 'avios',
   'flying-blue': 'flyingblue',
-  'krisflyer': 'krisflyer',
-  'virginatlantic': 'virgin-atlantic',
+  'krisflyer': 'singapore',
+  'virginatlantic': 'virginatlantic',
   'emirates-skywards': 'emirates',
-  'southwest-rr': 'southwest',
+  'smiles': 'smiles',
+  'velocity': 'velocity',
+  'eurobonus': 'eurobonus',
+  'qantas': 'qantas',
+  'etihad': 'etihad',
 };
 
+const REVERSE_PROGRAM_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(PROGRAM_MAP).map(([k, v]) => [v, k])
+);
+
+// Issuer codes the actor accepts (from its input schema).
+const VALID_ISSUERS = new Set([
+  'aeromexico', 'aeroplan', 'alaska', 'american', 'azul', 'copa', 'delta',
+  'emirates', 'ethiopian', 'etihad', 'eurobonus', 'finnair', 'flyingblue',
+  'jetblue', 'lufthansa', 'qantas', 'qatar', 'saudia', 'singapore', 'smiles',
+  'turkish', 'united', 'velocity', 'virginatlantic',
+]);
+
+// app cabin -> actor cabin
 const CABIN_MAP: Record<string, string> = {
   'economy': 'economy',
   'premium_economy': 'premium',
@@ -65,28 +103,27 @@ const CABIN_MAP: Record<string, string> = {
   'first': 'first',
 };
 
-const REVERSE_PROGRAM_MAP: Record<string, string> = Object.fromEntries(
-  Object.entries(PROGRAM_MAP).map(([k, v]) => [v, k])
-);
+// actor cabin -> app cabin
+const REVERSE_CABIN_MAP: Record<string, 'economy' | 'premium_economy' | 'business' | 'first'> = {
+  'economy': 'economy',
+  'premium': 'premium_economy',
+  'business': 'business',
+  'first': 'first',
+};
 
-const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL_MS = 15 * 60 * 1000;
+// Simple in-memory cache (15 min) keyed by search params.
+const cache = new Map<string, { data: ApifyAwardResult[]; timestamp: number }>();
+const CACHE_TTL = 15 * 60 * 1000;
 
 function getCacheKey(params: ApifySearchParams): string {
-  return `${params.origin}:${params.destination}:${params.startDate}:${params.endDate || ''}:${params.cabin || ''}`;
-}
-
-function getFromCache<T>(key: string): T | null {
-  const entry = cache.get(key);
-  if (entry && Date.now() - entry.timestamp < CACHE_TTL_MS) {
-    return entry.data as T;
-  }
-  cache.delete(key);
-  return null;
-}
-
-function setCache<T>(key: string, data: T): void {
-  cache.set(key, { data, timestamp: Date.now() });
+  return JSON.stringify([
+    params.origin,
+    params.destination,
+    params.startDate,
+    params.endDate || params.startDate,
+    params.cabin || '',
+    (params.programs || []).slice().sort(),
+  ]);
 }
 
 export async function searchAwardFlights(params: ApifySearchParams): Promise<ApifyAwardResult[]> {
@@ -96,29 +133,35 @@ export async function searchAwardFlights(params: ApifySearchParams): Promise<Api
   }
 
   const cacheKey = getCacheKey(params);
-  const cached = getFromCache<ApifyAwardResult[]>(cacheKey);
-  if (cached) return cached;
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
 
   const input: Record<string, unknown> = {
     origins: [params.origin],
     destinations: [params.destination],
     startDate: params.startDate,
     endDate: params.endDate || params.startDate,
+    maxItems: 100,
   };
 
   if (params.cabin) {
-    input.cabinClass = CABIN_MAP[params.cabin] || 'economy';
+    input.cabin = CABIN_MAP[params.cabin] || '';
   }
 
   if (params.programs && params.programs.length > 0) {
-    input.programs = params.programs
-      .map(p => PROGRAM_MAP[p] || p)
-      .filter(Boolean);
+    const issuers = params.programs
+      .map((p) => PROGRAM_MAP[p] || p)
+      .filter((v) => VALID_ISSUERS.has(v));
+    if (issuers.length > 0) {
+      input.issuers = issuers;
+    }
   }
 
-  // Start the actor run
-  const runResponse = await fetch(
-    `${APIFY_BASE_URL}/acts/${ACTOR_ID}/runs?token=${apiKey}`,
+  // Run the actor synchronously and get the dataset items in one call.
+  const response = await fetch(
+    `${APIFY_BASE_URL}/acts/${ACTOR_ID}/run-sync-get-dataset-items?token=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -126,149 +169,119 @@ export async function searchAwardFlights(params: ApifySearchParams): Promise<Api
     }
   );
 
-  if (!runResponse.ok) {
-    const errorText = await runResponse.text();
-    throw new Error(`Apify run failed: ${runResponse.status} ${errorText}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Apify run failed: ${response.status} ${errorText}`);
   }
 
-  const runData: ApifyRunResponse = await runResponse.json();
-  const runId = runData.data.id;
-
-  // Poll for completion (max 60 seconds)
-  const maxWait = 60_000;
-  const pollInterval = 3_000;
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < maxWait) {
-    await new Promise(resolve => setTimeout(resolve, pollInterval));
-
-    const statusResponse = await fetch(
-      `${APIFY_BASE_URL}/actor-runs/${runId}?token=${apiKey}`
-    );
-    const statusData = await statusResponse.json();
-
-    if (statusData.data.status === 'SUCCEEDED') {
-      break;
-    }
-    if (statusData.data.status === 'FAILED' || statusData.data.status === 'ABORTED') {
-      throw new Error(`Apify run ${statusData.data.status}`);
-    }
-  }
-
-  // Fetch results from the dataset
-  const datasetResponse = await fetch(
-    `${APIFY_BASE_URL}/actor-runs/${runId}/dataset/items?token=${apiKey}&format=json`
-  );
-
-  if (!datasetResponse.ok) {
-    throw new Error('Failed to fetch Apify results');
-  }
-
-  const results: ApifyAwardResult[] = await datasetResponse.json();
-  setCache(cacheKey, results);
-
+  const results: ApifyAwardResult[] = await response.json();
+  cache.set(cacheKey, { data: results, timestamp: Date.now() });
   return results;
 }
+
+function extractTime(iso?: string): string {
+  if (!iso) return '';
+  const t = iso.indexOf('T');
+  if (t === -1) return '';
+  return iso.slice(t + 1, t + 6); // "HH:MM"
+}
+
+function formatDuration(minutes?: number): string {
+  if (!minutes || minutes <= 0) return '';
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  return `${hours}h ${mins}m`;
+}
+
+// Pick the most appealing itinerary (fewest stops, then shortest).
+function pickItinerary(itineraries?: ApifyItinerary[]): ApifyItinerary | undefined {
+  if (!itineraries || itineraries.length === 0) return undefined;
+  return [...itineraries].sort((a, b) => {
+    const stopsDiff = (a.stops ?? 99) - (b.stops ?? 99);
+    if (stopsDiff !== 0) return stopsDiff;
+    return (a.totalDuration ?? Infinity) - (b.totalDuration ?? Infinity);
+  })[0];
+}
+
+const CASH_ESTIMATES: Record<string, number> = {
+  economy: 600,
+  premium_economy: 1500,
+  business: 5000,
+  first: 12000,
+};
 
 export function transformApifyResults(
   results: ApifyAwardResult[],
   filterCabin?: string
 ): import('@/types').AwardFlight[] {
   const { loyaltyPrograms } = require('@/data/loyalty-programs');
+  const flights: import('@/types').AwardFlight[] = [];
 
-  return results
-    .filter(r => !filterCabin || r.cabin.toLowerCase() === filterCabin)
-    .filter(r => r.miles > 0 && r.seats > 0)
-    .map((r, index) => {
-      const programId = REVERSE_PROGRAM_MAP[r.program] || r.program;
-      const program = loyaltyPrograms.find((p: { id: string }) => p.id === programId);
-
-      const cabinMap: Record<string, 'economy' | 'premium_economy' | 'business' | 'first'> = {
-        'economy': 'economy',
-        'premium': 'premium_economy',
-        'business': 'business',
-        'first': 'first',
+  results.forEach((item, itemIndex) => {
+    const itinerary = pickItinerary(item.itineraries);
+    const programId = REVERSE_PROGRAM_MAP[item.issuer] || item.issuer;
+    const program =
+      loyaltyPrograms.find((p: { id: string }) => p.id === programId) || {
+        id: programId,
+        name: item.issuerName || item.issuer,
+        type: 'airline' as const,
+        logoUrl: '',
+        baseValueCpp: 1.0,
+        transferPartners: [],
       };
 
-      const cabin = cabinMap[r.cabin.toLowerCase()] || 'economy';
-      const cashEstimate = estimateCashPrice(cabin);
-      const valueCpp = r.miles > 0 ? (cashEstimate / r.miles) * 100 : 0;
+    (item.cabins || []).forEach((cabin, cabinIndex) => {
+      if (!cabin.available || !cabin.mileage || cabin.mileage <= 0) return;
 
-      const firstFlight = r.flights?.[0];
-      const lastFlight = r.flights?.[r.flights.length - 1];
+      const cabinClass = REVERSE_CABIN_MAP[cabin.name?.toLowerCase()] || 'economy';
+      if (filterCabin && cabinClass !== filterCabin) return;
 
-      return {
-        id: `apify-${index}-${r.origin}-${r.destination}-${r.date}`,
+      const cashEstimate = CASH_ESTIMATES[cabinClass] || 600;
+      const valueCpp = cabin.mileage > 0 ? (cashEstimate / cabin.mileage) * 100 : 0;
+      const airlineName =
+        cabin.airlines?.[0]?.name || itinerary?.airlines?.[0]?.name || program.name;
+
+      const segments = itinerary?.segments?.map((s) => ({
+        flightNumber: s.flightNumber,
+        origin: s.origin,
+        destination: s.destination,
+        departureTime: extractTime(s.departure),
+        arrivalTime: extractTime(s.arrival),
+        aircraft: s.aircraftName,
+        fareClass: s.fareClass,
+      }));
+
+      const stops =
+        itinerary?.stops ?? (segments ? Math.max(0, segments.length - 1) : 0);
+
+      flights.push({
+        id: `apify-${item.issuer}-${item.origin}-${item.destination}-${item.date}-${cabin.name}-${itemIndex}-${cabinIndex}`,
         programId,
-        program: program || {
-          id: programId,
-          name: r.program,
-          type: 'airline' as const,
-          logoUrl: '',
-          baseValueCpp: 1.0,
-          transferPartners: [],
-        },
-        origin: r.origin,
-        destination: r.destination,
-        departureDate: r.date,
-        departureTime: firstFlight?.departure || '',
-        arrivalTime: lastFlight?.arrival || '',
-        airline: firstFlight?.airline || r.program,
-        flightNumber: firstFlight?.flightNumber || '',
-        aircraft: firstFlight?.aircraft,
-        cabinClass: cabin,
-        pointsRequired: r.miles,
-        taxesFees: r.taxes || 0,
-        seatsAvailable: r.seats,
-        duration: calculateDuration(r.flights),
-        stops: Math.max(0, (r.flights?.length || 1) - 1),
+        program,
+        origin: item.origin,
+        destination: item.destination,
+        departureDate: item.date,
+        departureTime: extractTime(itinerary?.departure),
+        arrivalTime: extractTime(itinerary?.arrival),
+        airline: airlineName,
+        flightNumber: itinerary?.flightNumbers?.[0] || '',
+        aircraft: itinerary?.aircrafts?.[0],
+        cabinClass,
+        pointsRequired: cabin.mileage,
+        taxesFees: Math.round((cabin.taxes || 0) / 100),
+        seatsAvailable: 1,
+        duration: formatDuration(itinerary?.totalDuration),
+        stops,
         valueCpp: Math.round(valueCpp * 10) / 10,
         source: 'apify',
-        bookingUrl: r.bookingUrl,
-        segments: r.flights?.map(f => ({
-          flightNumber: f.flightNumber,
-          origin: f.origin,
-          destination: f.destination,
-          departureTime: f.departure,
-          arrivalTime: f.arrival,
-          aircraft: f.aircraft,
-        })),
+        bookingUrl: item.link,
+        segments,
         isLiveData: true,
-      };
-    })
-    .sort((a, b) => a.pointsRequired - b.pointsRequired);
-}
+      });
+    });
+  });
 
-function estimateCashPrice(cabin: string): number {
-  const prices: Record<string, number> = {
-    economy: 600,
-    premium_economy: 1500,
-    business: 5000,
-    first: 12000,
-  };
-  return prices[cabin] || 600;
-}
-
-function calculateDuration(flights?: ApifyFlightSegment[]): string {
-  if (!flights || flights.length === 0) return '';
-
-  let totalMinutes = 0;
-  for (const f of flights) {
-    if (f.duration) {
-      totalMinutes += f.duration;
-    } else if (f.departure && f.arrival) {
-      const dep = new Date(f.departure).getTime();
-      const arr = new Date(f.arrival).getTime();
-      if (!isNaN(dep) && !isNaN(arr)) {
-        totalMinutes += (arr - dep) / 60000;
-      }
-    }
-  }
-
-  if (totalMinutes <= 0) return '';
-  const hours = Math.floor(totalMinutes / 60);
-  const mins = Math.round(totalMinutes % 60);
-  return `${hours}h ${mins}m`;
+  return flights.sort((a, b) => a.pointsRequired - b.pointsRequired);
 }
 
 export function getApifySupportedPrograms(): string[] {
