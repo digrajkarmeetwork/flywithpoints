@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -58,7 +58,7 @@ interface AIRecommendation {
   reasoning?: string;
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, pointBalances, setPointBalances, addPointBalance, updatePointBalance, removePointBalance } =
     useUserStore();
   const { isPremium, plan, openPortal, fetchSubscription } = useSubscriptionStore();
@@ -717,5 +717,13 @@ export default function DashboardPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <DashboardContent />
+    </Suspense>
   );
 }
