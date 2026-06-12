@@ -135,23 +135,25 @@ function getCacheKey(params: ApifySearchParams): string {
   ]);
 }
 
-export async function searchAwardFlights(params: ApifySearchParams): Promise<ApifyAwardResult[]> {
-  const apiKey = process.env.APIFY_API_TOKEN;
-  if (!apiKey) {
-    throw new Error('APIFY_API_TOKEN not configured');
-  }
+// Cap the searched date span so a flexible-date run stays bounded (the actor
+// scrapes every day in the range x every issuer).
+const MAX_DATE_SPAN_DAYS = 7;
 
-  const cacheKey = getCacheKey(params);
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
+function clampEndDate(startDate: string, endDate?: string): string {
+  if (!endDate || endDate <= startDate) return startDate;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const maxEnd = new Date(start);
+  maxEnd.setDate(maxEnd.getDate() + MAX_DATE_SPAN_DAYS);
+  return (end > maxEnd ? maxEnd : end).toISOString().split('T')[0];
+}
 
+function buildActorInput(params: ApifySearchParams): Record<string, unknown> {
   const input: Record<string, unknown> = {
     origins: [params.origin],
     destinations: [params.destination],
     startDate: params.startDate,
-    endDate: params.endDate || params.startDate,
+    endDate: clampEndDate(params.startDate, params.endDate),
     maxItems: 100,
   };
 
@@ -170,13 +172,38 @@ export async function searchAwardFlights(params: ApifySearchParams): Promise<Api
   }
   input.issuers = issuers.slice(0, MAX_ISSUERS);
 
-  // Run the actor synchronously and get the dataset items in one call.
+  return input;
+}
+
+export interface AwardSearchStart {
+  runId: string;
+  // Present when results were already cached and no run was needed.
+  results?: ApifyAwardResult[];
+}
+
+/**
+ * Start an Apify actor run for an award search and return its runId immediately.
+ * On a cache hit, returns the cached results so the caller can skip polling.
+ * Kept short so it fits comfortably within serverless function limits.
+ */
+export async function startAwardSearch(params: ApifySearchParams): Promise<AwardSearchStart> {
+  const apiKey = process.env.APIFY_API_TOKEN;
+  if (!apiKey) {
+    throw new Error('APIFY_API_TOKEN not configured');
+  }
+
+  const cacheKey = getCacheKey(params);
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return { runId: `cached:${cacheKey}`, results: cached.data };
+  }
+
   const response = await fetch(
-    `${APIFY_BASE_URL}/acts/${ACTOR_ID}/run-sync-get-dataset-items?token=${apiKey}`,
+    `${APIFY_BASE_URL}/acts/${ACTOR_ID}/runs?token=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      body: JSON.stringify(buildActorInput(params)),
     }
   );
 
@@ -185,9 +212,66 @@ export async function searchAwardFlights(params: ApifySearchParams): Promise<Api
     throw new Error(`Apify run failed: ${response.status} ${errorText}`);
   }
 
-  const results: ApifyAwardResult[] = await response.json();
-  cache.set(cacheKey, { data: results, timestamp: Date.now() });
-  return results;
+  const data = await response.json();
+  return { runId: data.data.id };
+}
+
+export interface AwardSearchStatus {
+  status: 'running' | 'done' | 'error';
+  results?: ApifyAwardResult[];
+  error?: string;
+}
+
+/**
+ * Poll an in-progress award search. Returns 'running' until the actor finishes,
+ * then 'done' with the scraped results (which are cached for repeat searches).
+ */
+export async function getAwardSearchResults(
+  runId: string,
+  cacheKey?: string
+): Promise<AwardSearchStatus> {
+  const apiKey = process.env.APIFY_API_TOKEN;
+  if (!apiKey) {
+    throw new Error('APIFY_API_TOKEN not configured');
+  }
+
+  // Sentinel for cache hits returned by startAwardSearch.
+  if (runId.startsWith('cached:')) {
+    const cached = cache.get(runId.slice('cached:'.length));
+    if (cached) return { status: 'done', results: cached.data };
+    return { status: 'done', results: [] };
+  }
+
+  const statusRes = await fetch(`${APIFY_BASE_URL}/actor-runs/${runId}?token=${apiKey}`);
+  if (!statusRes.ok) {
+    return { status: 'error', error: `Failed to check run status (${statusRes.status})` };
+  }
+  const statusData = await statusRes.json();
+  const runStatus: string = statusData.data?.status;
+
+  if (runStatus === 'SUCCEEDED') {
+    const datasetId = statusData.data.defaultDatasetId;
+    const itemsRes = await fetch(
+      `${APIFY_BASE_URL}/datasets/${datasetId}/items?token=${apiKey}&format=json`
+    );
+    if (!itemsRes.ok) {
+      return { status: 'error', error: 'Failed to fetch results' };
+    }
+    const results: ApifyAwardResult[] = await itemsRes.json();
+    if (cacheKey) cache.set(cacheKey, { data: results, timestamp: Date.now() });
+    return { status: 'done', results };
+  }
+
+  if (runStatus === 'FAILED' || runStatus === 'ABORTED' || runStatus === 'TIMED-OUT') {
+    return { status: 'error', error: `Search ${runStatus.toLowerCase()}` };
+  }
+
+  return { status: 'running' };
+}
+
+// Exposed so the API route can build the same cache key for storing results.
+export function awardSearchCacheKey(params: ApifySearchParams): string {
+  return getCacheKey(params);
 }
 
 function extractTime(iso?: string): string {

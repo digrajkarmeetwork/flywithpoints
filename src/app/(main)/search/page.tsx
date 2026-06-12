@@ -36,7 +36,9 @@ interface AIRecommendation {
 
 interface FlightSearchResponse {
   flights: AwardFlight[];
-  source: 'seats.aero' | 'mock' | 'error';
+  source?: 'apify' | 'error';
+  status?: 'running' | 'done' | 'error';
+  runId?: string;
   count?: number;
   lastUpdated?: string;
   message?: string;
@@ -63,7 +65,7 @@ function SearchContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
-  const [dataSource, setDataSource] = useState<'seats.aero' | 'mock' | 'error' | null>(null);
+  const [dataSource, setDataSource] = useState<'apify' | 'error' | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -162,11 +164,33 @@ function SearchContent() {
             cabin,
           });
 
+          // Start the search. The live scrape can take a few minutes, so the
+          // API returns a runId immediately and we poll until it completes.
           const response = await fetch(`/api/flights/search?${params}`);
-          const data: FlightSearchResponse = await response.json();
+          let data: FlightSearchResponse = await response.json();
+
+          if (data.status === 'running' && data.runId) {
+            const pollParams = new URLSearchParams(params);
+            pollParams.set('run_id', data.runId);
+            const deadline = Date.now() + 5 * 60 * 1000; // give the scrape up to 5 minutes
+
+            while (data.status === 'running' && Date.now() < deadline) {
+              await new Promise((resolve) => setTimeout(resolve, 4000));
+              const pollResponse = await fetch(`/api/flights/search?${pollParams}`);
+              data = await pollResponse.json();
+            }
+
+            if (data.status === 'running') {
+              data = {
+                flights: [],
+                source: 'error',
+                error: 'Search timed out. Please try again with a narrower date range.',
+              };
+            }
+          }
 
           setResults(data.flights);
-          setDataSource(data.source);
+          setDataSource(data.source || 'apify');
           if (data.lastUpdated) {
             setLastUpdated(data.lastUpdated);
           }
@@ -429,7 +453,8 @@ function SearchContent() {
                 {isSearching ? (
                   <div className="flex flex-col items-center justify-center py-20">
                     <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-                    <p className="text-muted-foreground">Searching for award availability...</p>
+                    <p className="text-muted-foreground">Searching live award availability across loyalty programs...</p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">This can take a minute or two — we&apos;re checking real airline inventory.</p>
                   </div>
                 ) : filteredResults.length > 0 ? (
                   <>
@@ -438,13 +463,13 @@ function SearchContent() {
                         <Badge variant="outline" className="bg-card">
                           {filteredResults.length} flights found
                         </Badge>
-                        {dataSource === 'seats.aero' && (
-                          <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
-                            Live Data from seats.aero
+                        {dataSource === 'apify' && (
+                          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                            Live Award Data
                           </Badge>
                         )}
                         {dataSource === 'error' && (
-                          <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+                          <Badge variant="secondary" className="bg-red-500/10 text-red-400 border-red-500/30">
                             API Error
                           </Badge>
                         )}
