@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -131,7 +132,9 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <SearchForm variant="hero" />
+            <Suspense fallback={<div className="h-32 rounded-2xl bg-card/50 animate-pulse" />}>
+              <SearchForm variant="hero" />
+            </Suspense>
           </motion.div>
 
           {/* Stats */}
